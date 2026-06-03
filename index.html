@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LootTap Web App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #0d1117; color: #ffffff; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .app-tab { display: none; width: 100%; height: 100%; flex-direction: column; overflow-y: auto; }
+        .app-tab::after { content: ""; display: block; min-height: 140px; flex-shrink: 0; }
+        .app-tab.active { display: flex; }
+        .header { flex-shrink: 0; padding: 20px; text-align: center; z-index: 10; }
+        .user-info { font-size: 14px; color: #8b949e; margin-bottom: 10px; font-weight: bold; }
+        .balance-container { display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 36px; font-weight: bold; }
+        .balance-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #ffd700, #ffaa00); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        .daily-limit { font-size: 13px; color: #8b949e; margin-top: 8px; font-weight: 500; }
+        .screens-wrapper { position: relative; flex-grow: 1; overflow: hidden; display: flex; }
+        .screen-tap { position: absolute; width: 100%; height: 100%; left: 0; transition: transform 0.4s ease; display: flex; justify-content: center; align-items: center; }
+        .screen-spin { position: absolute; width: 100%; height: 100%; left: 100%; transition: transform 0.4s ease; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .tap-button { width: 280px; height: 280px; background: radial-gradient(circle, #2ea043 0%, #238636 100%); border-radius: 50%; box-shadow: 0 10px 30px rgba(46, 160, 67, 0.4), inset 0 -10px 20px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.1s ease; position: relative; z-index: 10; }
+        .tap-button:active { transform: scale(0.95); }
+        .tap-logo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 8px solid #2ea043; pointer-events: none; }
+        .side-tab { position: absolute; right: 0; top: 50%; transform: translateY(-50%); background-color: #238636; color: white; padding: 15px 5px; border-radius: 8px 0 0 8px; font-size: 13px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 20; border: 2px solid #2ea043; border-right: none; transition: all 0.4s ease; }
+        .side-tab.moved-left { right: auto; left: 0; border-radius: 0 8px 8px 0; border-left: none; border-right: 2px solid #2ea043; box-shadow: 3px 0 10px rgba(0,0,0,0.4); }
+        .tab-text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 5px; }
+        .side-tab.moved-left .tab-text-vertical { transform: rotate(0deg); margin-top: 0; margin-bottom: 5px; }
+        .wheel-container { position: relative; width: 280px; height: 280px; flex-shrink: 0; margin-bottom: 15px; }
+        .roulette-wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 20px rgba(46, 160, 67, 0.4); position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); transform: rotate(0deg); background: conic-gradient( #2ea043 0deg 45deg, #000 45deg 90deg, #fff 90deg 135deg, #000 135deg 180deg, #2ea043 180deg 225deg, #000 225deg 270deg, #fff 270deg 315deg, #000 315deg 360deg ); }
+        .wheel-text-container { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+        .wheel-text { position: absolute; width: 50%; height: 20px; top: calc(50% - 10px); left: 50%; transform-origin: left center; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: flex-end; padding-right: 30px; font-family: Arial, sans-serif; white-space: nowrap; }
+        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: #161b22; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #fff; z-index: 5; }
+        .wheel-pointer { position: absolute; top: 50%; right: -18px; transform: translateY(-50%); width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 20px solid #fff; z-index: 4; filter: drop-shadow(2px 0 2px rgba(0,0,0,0.5)); }
+        .spin-btn-active { background-color: #388E3C; color: #ffffff; padding: 14px 30px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 10px; border: none; cursor: pointer; width: 85%; transition: 0.2s; }
+        .spin-btn-active:active { transform: scale(0.95); }
+        .spin-btn-disabled { background-color: #c4c4c4; color: #333333; padding: 14px 10px; border-radius: 12px; font-weight: bold; font-size: 15px; margin-top: 10px; border: none; width: 85%; }
+        .spin-note { font-size: 12px; color: #8b949e; margin-top: 12px; }
+        .energy-wrapper { padding: 10px 20px 25px 20px; background-color: #0d1117; flex-shrink: 0; z-index: 50; }
+        .energy-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .energy-text { font-size: 18px; font-weight: bold; }
+        .boost-btn-small { background-color: #21262d; border: 1px solid #30363d; color: white; padding: 8px 15px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .boost-btn-small:active { transform: scale(0.95); }
+        .progress-bar-bg { width: 100%; height: 10px; background-color: #21262d; border-radius: 5px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background-color: #2ea043; width: 100%; transition: width 0.2s ease; }
+        .page-header { text-align: center; padding: 20px; border-bottom: 1px solid #30363d; margin-bottom: 10px; }
+        .page-header h2 { font-size: 20px; margin-bottom: 5px; }
+        .page-header p { font-size: 13px; color: #8b949e; }
+        .section-title { font-size: 16px; font-weight: bold; margin: 15px 20px 10px 20px; color: #8b949e; }
+        .my-rank-card { background-color: #21262d; margin: 10px 20px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2ea043; }
+        .rank-list { padding: 0 20px; }
+        .rank-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #30363d; }
+        .rank-number { width: 35px; font-weight: bold; color: #8b949e; font-size: 16px; display: flex; align-items: center; }
+        .rank-number.gold { font-size: 22px; }
+        .rank-number.silver { font-size: 22px; }
+        .rank-number.bronze { font-size: 22px; }
+        .rank-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #2ea043; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 15px; font-size: 18px; color: white; }
+        .rank-details { flex-grow: 1; }
+        .rank-name { font-size: 15px; font-weight: bold; }
+        .rank-score { font-size: 13px; color: #2ea043; font-weight: bold; margin-top: 3px; }
+        .task-card { background-color: #161b22; border-radius: 12px; padding: 15px; margin: 0 20px 12px 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; transition: all 0.3s ease;}
+        .task-left { display: flex; align-items: center; gap: 15px; }
+        .task-icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; color: white; }
+        .task-icon-youtube { background-color: #ff0000; }
+        .task-icon-instagram { background-color: #E1306C; }
+        .task-icon-telegram { background-color: #0088cc; }
+        .task-info h4 { font-size: 15px; margin-bottom: 4px; }
+        .task-info p { font-size: 13px; color: #ffd700; font-weight: bold; }
+        .task-go-btn { padding: 6px 0; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: white; border: none; cursor: pointer; transition: 0.2s; font-weight: bold; font-size: 12px;}
+        .task-go-btn:disabled { background-color: #30363d; color: #8b949e; cursor: not-allowed; }
+        
+        .shop-tabs { display: flex; gap: 5px; margin: 0 20px 20px 20px; background-color: #161b22; border-radius: 10px; padding: 5px; }
+        .shop-tab-btn { flex: 1; padding: 10px 0; text-align: center; border-radius: 8px; font-size: 13px; font-weight: bold; color: #8b949e; transition: 0.2s; cursor: pointer; white-space: nowrap; }
+        .shop-tab-btn.active { background-color: #2ea043; color: white; }
+        
+        .uc-form { padding: 0 20px; margin-top: 10px; }
+        .shop-section-title { font-size: 14px; color: #8b949e; margin-bottom: 12px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .uc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .uc-box { position: relative; background-color: #161b22; border: 2px solid #30363d; border-radius: 12px; padding: 15px 12px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; }
+        .uc-box.active { border-color: #2ea043; background-color: rgba(46, 160, 67, 0.1); }
+        .pkg-tier { font-size: 12px; color: #8b949e; font-weight: bold; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .pkg-amount { font-size: 20px; color: #ffffff; font-weight: 900; margin-bottom: 2px; }
+        .pkg-cost { font-size: 11px; color: #8b949e; }
+        .active-check { position: absolute; bottom: 10px; right: 10px; width: 22px; height: 22px; background-color: #2ea043; border-radius: 50%; display: none; justify-content: center; align-items: center; color: #ffffff; font-size: 12px; font-weight: bold; }
+        .uc-box.active .active-check { display: flex; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group input { width: 100%; background-color: #161b22; border: 1px solid #30363d; color: white; padding: 15px; border-radius: 10px; font-size: 14px; outline: none; }
+        .input-group input:focus { border-color: #2ea043; }
+        .submit-btn { width: 100%; background-color: #2ea043; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; border: none; margin-top: 10px; cursor: pointer; transition: 0.2s; }
+        .submit-btn:active { transform: scale(0.98); }
+        .invite-btn { background-color: #2ea043; color: white; border-radius: 12px; padding: 16px; margin: 10px 20px 10px 20px; font-weight: bold; font-size: 16px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); }
+        .empty-friends { background-color: #161b22; margin: 0 20px; padding: 20px; border-radius: 12px; text-align: center; color: #8b949e; font-size: 13px; border: 1px solid #30363d; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background-color: #161b22; padding: 15px 10px 25px 10px; border-top: 1px solid #30363d; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #8b949e; font-size: 12px; cursor: pointer; width: 20%; gap: 5px; font-weight: 500; }
+        .nav-item.active { color: #2ea043; }
+        .nav-icon { font-size: 22px; }
+        .toast-notification { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #2ea043; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 2000; transition: bottom 0.4s; white-space: nowrap; font-size: 14px; }
+        .floating-number { position: absolute; font-size: 28px; font-weight: bold; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.8); pointer-events: none; animation: floatUp 1s forwards; z-index: 100; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1500; display: none; opacity: 0; transition: opacity 0.3s; }
+        .overlay.show { opacity: 1; display: block; }
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background-color: #161b22; border-radius: 24px 24px 0 0; z-index: 2000; padding: 20px 0 25px 0; transition: bottom 0.3s cubic-bezier(0.17, 0.67, 0.12, 0.99); display: flex; flex-direction: column; max-height: 85vh; border-top: 1px solid #30363d; }
+        .bottom-sheet.open { bottom: 0; }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 15px 20px; border-bottom: 1px solid #30363d; margin-bottom: 10px; }
+        .sheet-header h3 { font-size: 18px; color: #fff; margin: 0; }
+        .sheet-content { overflow-y: auto; max-height: 70vh; padding: 0 20px 20px 20px; }
+        .booster-card { background-color: #161b22; border-radius: 12px; padding: 15px; margin: 0 0 12px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; }
+        .booster-info h4 { font-size: 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .lvl-badge { background-color: #2ea043; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+        .booster-info p { font-size: 12px; color: #8b949e; line-height: 1.4; }
+        .booster-price { background-color: #2ea043; color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; transition: 0.2s; }
+        .booster-price:active { transform: scale(0.95); }
+        .ref-rule { background-color: rgba(255, 215, 0, 0.1); border: 1px solid #ffaa00; padding: 10px; margin: 0 20px 15px 20px; border-radius: 8px; font-size: 12px; color: #ffd700; text-align: center; }
+        .ref-box { display: flex; justify-content: space-between; align-items: center; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; transition: 0.2s; cursor: pointer;}
+        .ref-box.active { border-color: #2ea043; background-color: rgba(46, 160, 67, 0.1); }
+        .ref-info h3 { font-size: 16px; color: white; }
+        .ref-info p { font-size: 12px; color: #8b949e; margin-top: 3px; }
+        .ref-cost { background-color: #2ea043; color: white; padding: 5px 10px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div id="tab-main" class="app-tab active">
+        <div class="header">
+            <div class="user-info" id="username">LootTap O'yinchisi</div>
+            <div class="balance-container">
+                <div class="balance-icon">💎</div>
+                <span id="score">0</span>
+            </div>
+            <div class="daily-limit">Bugunlik limit: <span id="limitText">15,000</span></div>
+        </div>
+
+        <div class="screens-wrapper">
+            <div class="screen-tap" id="screenTap">
+                <div class="tap-button" id="tapBtn">
+                    <img src="logo.png" class="tap-logo" alt="Logo">
+                </div>
+            </div>
+
+            <div class="screen-spin" id="screenSpin">
+                <div class="wheel-container">
+                    <div class="roulette-wheel" id="wheel">
+                        <div class="wheel-text-container">
+                            <div class="wheel-text" style="transform: rotate(22.5deg); color: #111;">300k loot</div>
+                            <div class="wheel-text" style="transform: rotate(67.5deg); color: #fff;">100k loot</div>
+                            <div class="wheel-text" style="transform: rotate(112.5deg); color: #111;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(157.5deg); color: #fff;">100k loot</div>
+                            <div class="wheel-text" style="transform: rotate(202.5deg); color: #111;">300k loot</div>
+                            <div class="wheel-text" style="transform: rotate(247.5deg); color: #fff;">100k loot</div>
+                            <div class="wheel-text" style="transform: rotate(292.5deg); color: #111;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(337.5deg); color: #fff;">100k loot</div>
+                        </div>
+                    </div>
+                    <div class="wheel-center">
+                        LootTap
+                        <div class="wheel-pointer"></div>
+                    </div>
+                </div>
+                <button id="spinActionBtn" class="spin-btn-active" onclick="startSpin()">Aylantirish</button>
+                <div class="spin-note">24 soatda bir marta aylantirish mumkin</div>
+            </div>
+
+            <div class="side-tab" id="sideTab" onclick="toggleScreen()">
+                <div id="tabArrow" style="font-size: 18px; line-height: 1;">‹</div>
+                <div id="tabText" class="tab-text-vertical">Spin</div>
+            </div>
+        </div>
+
+        <div class="energy-wrapper" id="energyWrapper">
+            <div class="energy-section">
+                <div class="energy-text">⚡️ <span id="energyText">1000</span> / <span id="maxEnergyText">1000</span></div>
+                <div class="boost-btn-small" onclick="openBoostSheet()">🚀 Boost</div>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="energyBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-rating" class="app-tab">
+        <div class="page-header">
+            <h2>TOP 100</h2>
+            <p>Eng ko'p loot yig'gan o'yinchilar ro'yxati</p>
+        </div>
+        <div style="padding: 0 20px;">
+            <button onclick="saveToBotAndExit()" class="boost-btn-small" style="width: 100%; margin-bottom: 10px; padding: 15px; font-size: 16px; font-weight: bold; background-color: #2ea043; border: none; box-shadow: 0 4px 15px rgba(46, 160, 67, 0.4);">🔄 Reytingda o'rnimni yangilash</button>
+        </div>
+        <div class="my-rank-card">
+            <div style="display: flex; align-items: center;">
+                <div class="rank-avatar" id="myRankAvatar">S</div>
+                <div style="margin-left: 10px;">
+                    <div style="font-weight: bold; font-size: 15px;" id="myRankName">Siz</div>
+                    <div style="color: #2ea043; font-size: 13px; font-weight: bold;" id="myRankScore">0 loot</div>
+                </div>
+            </div>
+        </div>
+        <div class="section-title">Global Reyting</div>
+        <div class="rank-list" id="rating-list"></div>
+    </div>
+
+    <div id="tab-friends" class="app-tab">
+        <div class="page-header" style="border: none; padding-bottom: 0;">
+            <div style="font-size: 60px; margin-bottom: 10px;">🤝</div>
+            <h2>Do'stlaringizni taklif qiling!</h2>
+            <p>Do'stlar to'plab, tekinga o'yin valyutasini oling!</p>
+        </div>
+        <button class="invite-btn" onclick="copyRefLink()">🔗 Taklif havolasini nusxalash</button>
+        <div class="ref-rule">
+            ⚠️ <b>QOIDA:</b> Firibgarlikni oldini olish uchun yutuq olishda hisobingizda kamida <b>10,000,000 Loot</b> bo'lishi shart! (Lootingiz yechilmaydi)
+        </div>
+        <div class="shop-tabs">
+            <div class="shop-tab-btn active" onclick="switchRefCategory('uc', this)">UC</div>
+            <div class="shop-tab-btn" onclick="switchRefCategory('ff', this)">FF Almaz</div>
+            <div class="shop-tab-btn" onclick="switchRefCategory('mlbb', this)">MLBB</div>
+        </div>
+        <div id="ref-cat-uc" class="shop-category" style="display: block;">
+            <div class="uc-form">
+                <div class="ref-box active" onclick="selectRefItem(this, 120, '120 UC')"><div class="ref-info"><h3>120 UC</h3></div><div class="ref-cost">👥 120 ta do'st</div></div>
+                <div class="ref-box" onclick="selectRefItem(this, 180, '180 UC')"><div class="ref-info"><h3>180 UC</h3></div><div class="ref-cost">👥 180 ta do'st</div></div>
+                <div class="ref-box" onclick="selectRefItem(this, 400, '325 UC')"><div class="ref-info"><h3>325 UC (RP)</h3></div><div class="ref-cost">👥 400 ta do'st</div></div>
+                <div class="input-group"><input type="number" placeholder="PUBG ID" id="ref-uc-id"></div>
+                <div class="input-group"><input type="text" placeholder="PUBG NIK" id="ref-uc-nick"></div>
+                <button class="submit-btn" onclick="requestRefWithdraw('uc')">Tasdiqlash</button>
+            </div>
+        </div>
+        <div id="ref-cat-ff" class="shop-category" style="display: none;">
+            <div class="uc-form">
+                <div class="ref-box active" onclick="selectRefItem(this, 120, '240 Almaz')"><div class="ref-info"><h3>240 Almaz</h3></div><div class="ref-cost">👥 120 ta do'st</div></div>
+                <div class="ref-box" onclick="selectRefItem(this, 180, '360 Almaz')"><div class="ref-info"><h3>360 Almaz</h3></div><div class="ref-cost">👥 180 ta do'st</div></div>
+                <div class="ref-box" onclick="selectRefItem(this, 400, '650 Almaz')"><div class="ref-info"><h3>650 Almaz</h3></div><div class="ref-cost">👥 400 ta do'st</div></div>
+                <div class="input-group"><input type="number" placeholder="Free Fire ID" id="ref-ff-id"></div>
+                <div class="input-group"><input type="text" placeholder="Free Fire NIK" id="ref-ff-nick"></div>
+                <button class="submit-btn" onclick="requestRefWithdraw('ff')">Tasdiqlash</button>
+            </div>
+        </div>
+        <div id="ref-cat-mlbb" class="shop-category" style="display: none;">
+            <div class="uc-form">
+                <div class="ref-box active" onclick="selectRefItem(this, 120, '170 Almaz')"><div class="ref-info"><h3>170 Almaz</h3></div><div class="ref-cost">👥 120 ta do'st</div></div>
+                <div class="ref-box" onclick="selectRefItem(this, 180, '260 Almaz')"><div class="ref-info"><h3>260 Almaz</h3></div><div class="ref-cost">👥 180 ta do'st</div></div>
+                <div class="ref-box" onclick="selectRefItem(this, 400, '460 Almaz')"><div class="ref-info"><h3>460 Almaz</h3></div><div class="ref-cost">👥 400 ta do'st</div></div>
+                <div class="input-group"><input type="number" placeholder="MLBB ID" id="ref-mlbb-id"></div>
+                <div class="input-group"><input type="number" placeholder="Zone ID" id="ref-mlbb-zone"></div>
+                <div class="input-group"><input type="text" placeholder="MLBB NIK" id="ref-mlbb-nick"></div>
+                <button class="submit-btn" onclick="requestRefWithdraw('mlbb')">Tasdiqlash</button>
+            </div>
+        </div>
+        <div class="section-title" style="text-align: center; margin-top: 30px;">🏆 Do'stlar Reytingi (Top 100)</div>
+        <div class="rank-list" id="ref-rating-list"></div>
+    </div>
+
+    <div id="tab-tasks" class="app-tab">
+        <div class="page-header">
+            <h2>Vazifalar</h2>
+            <p>Vazifalarni bajaring va ko'proq loot ishlash</p>
+        </div>
+        
+        <div class="section-title">Ijtimoiy Tarmoqlar</div>
+        
+        <div id="tasks-container">
+            <div class="task-card" id="task-youtube">
+                <div class="task-left">
+                    <div class="task-icon-circle task-icon-youtube"><i class="fa-brands fa-youtube"></i></div>
+                    <div class="task-info">
+                        <div class="task-text"><h4>LootTap Rasmiy Kanali</h4><p>+150,000 loot</p></div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <button class="task-go-btn" style="width: 90px; background-color: #e53935;" onclick="goToTask('youtube', 'https://youtube.com/@loottapbot?si=Aymwa_ZZWO0iGgp4')">Obuna</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-youtube-btn" onclick="checkTask('youtube', 150000)">Tekshirish</button>
+                </div>
+            </div>
+
+            <div class="task-card" id="task-instagram">
+                <div class="task-left">
+                    <div class="task-icon-circle task-icon-instagram"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="task-info">
+                        <div class="task-text"><h4>Instagram Sahifamiz</h4><p>+100,000 loot</p></div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <button class="task-go-btn" style="width: 90px; background-color: #E1306C;" onclick="goToTask('instagram', 'https://www.instagram.com/sherxanpro/')">Obuna</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-instagram-btn" onclick="checkTask('instagram', 100000)">Tekshirish</button>
+                </div>
+            </div>
+
+            <div class="task-card" id="task-telegram">
+                <div class="task-left">
+                    <div class="task-icon-circle task-icon-telegram"><i class="fa-brands fa-telegram"></i></div>
+                    <div class="task-info">
+                        <div class="task-text"><h4>Telegram Kanalimiz</h4><p>+50,000 loot</p></div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('telegram', 'https://t.me/niksotaman')">Obuna</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-telegram-btn" onclick="checkTask('telegram', 50000)">Tekshirish</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-shop" class="app-tab">
+        <div class="page-header">
+            <h2>Uc va Almazlar (Loot orqali)</h2>
+            <p>Lootlarni haqiqiy daromad yoki o'yin valyutasiga almashtiring</p>
+        </div>
+        <div class="shop-tabs">
+            <div class="shop-tab-btn active" onclick="switchShopCategory('uc', this)">UC</div>
+            <div class="shop-tab-btn" onclick="switchShopCategory('ff', this)">FF Almaz</div>
+            <div class="shop-tab-btn" onclick="switchShopCategory('mlbb', this)">MLBB</div>
+        </div>
+        
+        <div id="cat-uc" class="shop-category" style="display: block;">
+            <div class="uc-form">
+                <div class="shop-section-title">📦 UC Paket tanlang</div>
+                <div class="uc-options">
+                    <div class="uc-box active" onclick="selectItem(this, 6000000, 'uc')">
+                        <div class="pkg-tier">Starter <span></span></div>
+                        <div class="pkg-amount">60 UC</div>
+                        <div class="pkg-cost">6 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 12000000, 'uc')">
+                        <div class="pkg-tier">Popular <span>🔥</span></div>
+                        <div class="pkg-amount">130 UC</div>
+                        <div class="pkg-cost">12 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 30000000, 'uc')">
+                        <div class="pkg-tier">Pro <span></span></div>
+                        <div class="pkg-amount">325 UC</div>
+                        <div class="pkg-cost">30 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 60000000, 'uc')">
+                        <div class="pkg-tier">Elite <span>👑</span></div>
+                        <div class="pkg-amount">660 UC</div>
+                        <div class="pkg-cost">60 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                </div>
+                <div class="input-group"><input type="number" placeholder="PUBG ID" id="uc-id"></div>
+                <div class="input-group"><input type="text" placeholder="PUBG NIK" id="uc-nick"></div>
+                <button class="submit-btn" onclick="requestWithdraw('uc')">Tasdiqlash</button>
+            </div>
+        </div>
+
+        <div id="cat-ff" class="shop-category" style="display: none;">
+            <div class="uc-form">
+                <div class="shop-section-title">💎 Almaz Paket tanlang</div>
+                <div class="uc-options">
+                    <div class="uc-box active" onclick="selectItem(this, 5000000, 'ff')">
+                        <div class="pkg-tier">Starter <span></span></div>
+                        <div class="pkg-amount">110 Almaz</div>
+                        <div class="pkg-cost">5 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 10000000, 'ff')">
+                        <div class="pkg-tier">Popular <span>🔥</span></div>
+                        <div class="pkg-amount">210 Almaz</div>
+                        <div class="pkg-cost">10 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 15000000, 'ff')">
+                        <div class="pkg-tier">Pro <span></span></div>
+                        <div class="pkg-amount">341 Almaz</div>
+                        <div class="pkg-cost">15 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 35000000, 'ff')">
+                        <div class="pkg-tier">Elite <span>👑</span></div>
+                        <div class="pkg-amount">800 Almaz</div>
+                        <div class="pkg-cost">35 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                </div>
+                <div class="input-group"><input type="number" placeholder="Free Fire ID" id="ff-id"></div>
+                <div class="input-group"><input type="text" placeholder="Free Fire NIK" id="ff-nick"></div>
+                <button class="submit-btn" onclick="requestWithdraw('ff')">Tasdiqlash</button>
+            </div>
+        </div>
+
+        <div id="cat-mlbb" class="shop-category" style="display: none;">
+            <div class="uc-form">
+                <div class="shop-section-title">💎 Almaz Paket tanlang</div>
+                <div class="uc-options">
+                    <div class="uc-box active" onclick="selectItem(this, 8000000, 'mlbb')">
+                        <div class="pkg-tier">Starter <span></span></div>
+                        <div class="pkg-amount">86 Almaz</div>
+                        <div class="pkg-cost">8 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 16000000, 'mlbb')">
+                        <div class="pkg-tier">Popular <span>🔥</span></div>
+                        <div class="pkg-amount">172 Almaz</div>
+                        <div class="pkg-cost">16 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 22000000, 'mlbb')">
+                        <div class="pkg-tier">Pro <span></span></div>
+                        <div class="pkg-amount">257 Almaz</div>
+                        <div class="pkg-cost">22 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="uc-box" onclick="selectItem(this, 50000000, 'mlbb')">
+                        <div class="pkg-tier">Elite <span>👑</span></div>
+                        <div class="pkg-amount">700 Almaz</div>
+                        <div class="pkg-cost">50 mln loot</div>
+                        <div class="active-check"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                </div>
+                <div class="input-group"><input type="number" placeholder="MLBB ID" id="mlbb-id"></div>
+                <div class="input-group"><input type="number" placeholder="Zone ID" id="mlbb-zone"></div>
+                <div class="input-group"><input type="text" placeholder="MLBB NIK" id="mlbb-nick"></div>
+                <button class="submit-btn" onclick="requestWithdraw('mlbb')">Tasdiqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="boostOverlay" onclick="closeBoostSheet()"></div>
+    <div class="bottom-sheet" id="boostSheet">
+        <div class="sheet-header">
+            <h3>🚀 Kuchaytirish</h3>
+            <div style="font-weight: bold; font-size: 18px; color: #2ea043;"><span id="sheetScoreDisplay">0</span> loot</div>
+        </div>
+        <div class="sheet-content" id="sheetContent">
+            <div class="booster-card">
+                <div class="task-left">
+                    <div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">👆</div>
+                    <div class="booster-info">
+                        <h4>Tap kuchi <span class="lvl-badge" id="sheet-tapLvlBadge">Lvl 1</span></h4>
+                        <p id="sheet-tapDesc" style="font-size: 12px; color: #8b949e;">Har bir bosishda +1 loot</p>
+                        <p id="sheet-tapNext" style="font-size: 12px; color: #8b949e;">Keyingisi: 2</p>
+                    </div>
+                </div>
+                <button class="booster-price" id="sheet-tapBtnPrice" onclick="buyBoost('tap')">15,000</button>
+            </div>
+            <div class="booster-card">
+                <div class="task-left">
+                    <div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">🔋</div>
+                    <div class="booster-info">
+                        <h4>Max energiya <span class="lvl-badge" id="sheet-energyLvlBadge">Lvl 1</span></h4>
+                        <p id="sheet-energyDesc" style="font-size: 12px; color: #8b949e;">Maksimal energiya: 1000<br>Kunlik limit: 15,000</p>
+                        <p id="sheet-energyNext" style="font-size: 12px; color: #8b949e;">Keyingisi: 2,000 energiya • 30,000 limit</p>
+                    </div>
+                </div>
+                <button class="booster-price" id="sheet-energyBtnPrice" onclick="buyBoost('energy')">20,000</button>
+            </div>
+            <div class="booster-card">
+                <div class="task-left">
+                    <div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">⚡</div>
+                    <div class="booster-info">
+                        <h4>Energiya tiklanishi <span class="lvl-badge" id="sheet-regenLvlBadge">Lvl 1</span></h4>
+                        <p id="sheet-regenDesc" style="font-size: 12px; color: #8b949e;">Sekundiga +1 energiya</p>
+                        <p id="sheet-regenNext" style="font-size: 12px; color: #8b949e;">Keyingisi: 2</p>
+                    </div>
+                </div>
+                <button class="booster-price" id="sheet-regenBtnPrice" onclick="buyBoost('regen')">25,000</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('tab-main', this)"><div class="nav-icon"><i class="fa-solid fa-gamepad"></i></div>Asosiy</div>
+        <div class="nav-item" onclick="switchTab('tab-rating', this)"><div class="nav-icon"><i class="fa-solid fa-trophy"></i></div>Reyting</div>
+        <div class="nav-item" onclick="switchTab('tab-tasks', this)"><div class="nav-icon"><i class="fa-solid fa-list-check"></i></div>Vazifalar</div>
+        <div class="nav-item" onclick="switchTab('tab-friends', this)"><div class="nav-icon"><i class="fa-solid fa-user-group"></i></div>Do'stlar</div>
+        <div class="nav-item" id="nav-shop" onclick="switchTab('tab-shop', this)"><div class="nav-icon"><i class="fa-solid fa-shop"></i></div>Do'kon</div>
+    </div>
+
+    <div id="toastNotification" class="toast-notification"></div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        // --- YANGI: URL ORQALI MA'LUMOTLARNI O'QISH ---
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        let userId = urlParams.get('userid') || tg.initDataUnsafe?.user?.id || "123456";
+        let userName = tg.initDataUnsafe?.user?.first_name || "O'yinchi";
+        
+        // localStorage o'rniga faqat URL dan o'qiymiz
+        let score = parseInt(urlParams.get('score')) || 0;
+        let energy = parseInt(urlParams.get('energy')) || 1000;
+        let dailyLimit = parseInt(urlParams.get('limit')) || 15000;
+        
+        let userUpgrades = {
+            tap: parseInt(urlParams.get('tap')) || 0,
+            energy: parseInt(urlParams.get('eng')) || 0,
+            regen: parseInt(urlParams.get('reg')) || 0
+        };
+
+        // Vazifalar holati esa faqat mahalliy telefonda saqlanib qolavergani yaxshi (shartmas bazaga yuklash)
+        
+        document.getElementById('username').innerText = userName;
+        document.getElementById('myRankName').innerText = userName;
+        document.getElementById('myRankAvatar').innerText = userName.charAt(0).toUpperCase();
+
+        const shopData = {
+            tap: { levels: [1, 2, 4, 8, 16, 25, 40, 60, 90, 150], prices: [15000, 45000, 120000, 300000, 750000, 1500000, 3000000, 7500000, 15000000] },
+            energy: { max: [1000, 2000, 3500, 5000, 7000, 10000, 15000, 25000, 40000, 60000], limit: [15000, 30000, 52500, 75000, 100000, 150000, 250000, 400000, 650000, 1000000], prices: [20000, 60000, 150000, 400000, 900000, 2000000, 4500000, 10000000, 20000000] },
+            regen: { levels: [1, 2, 3, 4, 5, 7, 10, 15, 20, 30], prices: [25000, 75000, 200000, 500000, 1200000, 2500000, 5000000, 12000000, 25000000] }
+        };
+
+        userUpgrades.tap = Math.min(userUpgrades.tap, shopData.tap.levels.length - 1);
+        userUpgrades.energy = Math.min(userUpgrades.energy, shopData.energy.max.length - 1);
+        userUpgrades.regen = Math.min(userUpgrades.regen, shopData.regen.levels.length - 1);
+
+        let maxEnergy = shopData.energy.max[userUpgrades.energy];
+
+        const scoreEl = document.getElementById('score');
+        const energyTextEl = document.getElementById('energyText');
+        const limitTextEl = document.getElementById('limitText');
+        const energyBarEl = document.getElementById('energyBar');
+        const tapBtn = document.getElementById('tapBtn');
+        const myRankScoreEl = document.getElementById('myRankScore');
+        const maxEnergyTextEl = document.getElementById('maxEnergyText');
+
+        function updateScoreDisplays() {
+            let formatted = score.toLocaleString();
+            scoreEl.innerText = formatted;
+            myRankScoreEl.innerText = formatted + " loot";
+            if(document.getElementById('sheetScoreDisplay')) document.getElementById('sheetScoreDisplay').innerText = formatted;
+        }
+
+        function updateEnergyUI() {
+            energyTextEl.innerText = energy;
+            maxEnergyTextEl.innerText = maxEnergy;
+            const percentage = (energy / maxEnergy) * 100;
+            energyBarEl.style.width = `${percentage}%`;
+        }
+
+        updateScoreDisplays();
+        limitTextEl.innerText = dailyLimit.toLocaleString();
+        updateEnergyUI();
+
+        // saveData funksiyasi endi bo'sh qoldi (kodni buzmasligi uchun) chunki hamma narsa faqat bot orqali saqlanadi
+        function saveData() { }
+
+        // --- YANGI: SAQLASH VA CHIQISH TUGMASI ---
+        function saveToBotAndExit() {
+            let botUsername = "LootTapBot"; 
+            let url = `https://t.me/${botUsername}?start=save_${score}_${energy}_${userUpgrades.tap}_${userUpgrades.energy}_${userUpgrades.regen}_${dailyLimit}`;
+            
+            showToast("Ma'lumotlar saqlanmoqda... 🔄");
+            setTimeout(() => {
+                window.Telegram.WebApp.openTelegramLink(url);
+            }, 1000);
+        }
+
+        let taskClickTimes = {};
+
+        function goToTask(taskId, url) {
+            taskClickTimes[taskId] = Date.now();
+            if(tg && tg.openLink) {
+                tg.openLink(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        function checkTask(taskId, rewardAmount) {
+            if(localStorage.getItem('task_done_' + taskId)) {
+                showToast("Siz bu vazifani allaqachon bajargansiz! ⚠️");
+                return;
+            }
+
+            if(!taskClickTimes[taskId]) {
+                showToast("Avval 'Obuna' tugmasini bosib, kanalga a'zo bo'ling! ❌");
+                return;
+            }
+
+            let timePassed = Date.now() - taskClickTimes[taskId];
+            if(timePassed < 15000) { 
+                showToast("Obuna tasdiqlanmadi! Kamida 15 soniya vaqt ajrating. ⏳");
+                return;
+            }
+
+            let btn = document.getElementById('check-' + taskId + '-btn');
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Bajarildi';
+            btn.style.backgroundColor = '#2ea043';
+            btn.style.color = '#fff';
+            btn.disabled = true;
+
+            score += rewardAmount;
+            updateScoreDisplays();
+            localStorage.setItem('task_done_' + taskId, 'true'); // Vazifalar faqat shu yerda lokal saqlanadi
+            
+            showToast(`Vazifa muvaffaqiyatli tasdiqlandi! +${rewardAmount.toLocaleString()} loot ✅`);
+            setTimeout(() => { moveTaskToBottom(taskId); }, 500);
+        }
+
+        function moveTaskToBottom(taskId) {
+            const container = document.getElementById('tasks-container');
+            const taskEl = document.getElementById('task-' + taskId);
+            if (container && taskEl) {
+                container.appendChild(taskEl);
+            }
+        }
+
+        function initTasks() {
+            ['youtube', 'instagram', 'telegram'].forEach(taskId => {
+                if(localStorage.getItem('task_done_' + taskId)) {
+                    let btn = document.getElementById('check-' + taskId + '-btn');
+                    if(btn) {
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Bajarildi';
+                        btn.style.backgroundColor = '#2ea043';
+                        btn.style.color = '#fff';
+                        btn.disabled = true;
+                    }
+                    moveTaskToBottom(taskId);
+                }
+            });
+        }
+        initTasks();
+
+        function renderShop() {
+            let tLvl = userUpgrades.tap, tBadge = `Lvl ${tLvl + 1}`;
+            let tDesc = `Har bir bosishda +${shopData.tap.levels[tLvl]} loot`;
+            let tNextText = tLvl < shopData.tap.prices.length ? `Keyingisi: ${shopData.tap.levels[tLvl + 1]}` : "Maksimal daraja";
+            let tBtnText = tLvl < shopData.tap.prices.length ? shopData.tap.prices[tLvl].toLocaleString() : "MAX";
+            let tDisabled = tLvl >= shopData.tap.prices.length;
+            document.getElementById('sheet-tapLvlBadge').innerText = tBadge; document.getElementById('sheet-tapDesc').innerText = tDesc; document.getElementById('sheet-tapNext').innerText = tNextText;
+            let stBtn = document.getElementById('sheet-tapBtnPrice'); stBtn.innerText = tBtnText; stBtn.disabled = tDisabled; stBtn.style.backgroundColor = tDisabled ? "#c4c4c4" : "#2ea043";
+
+            let eLvl = userUpgrades.energy, eBadge = `Lvl ${eLvl + 1}`;
+            let eDesc = `Maksimal energiya: ${shopData.energy.max[eLvl].toLocaleString()}<br>Kunlik limit: ${shopData.energy.limit[eLvl].toLocaleString()}`;
+            let eNextText = eLvl < shopData.energy.prices.length ? `Keyingisi: ${shopData.energy.max[eLvl + 1].toLocaleString()} energiya • ${shopData.energy.limit[eLvl + 1].toLocaleString()} limit` : "Maksimal daraja";
+            let eBtnText = eLvl < shopData.energy.prices.length ? shopData.energy.prices[eLvl].toLocaleString() : "MAX";
+            let eDisabled = eLvl >= shopData.energy.prices.length;
+            document.getElementById('sheet-energyLvlBadge').innerText = eBadge; document.getElementById('sheet-energyDesc').innerHTML = eDesc; document.getElementById('sheet-energyNext').innerText = eNextText;
+            let seBtn = document.getElementById('sheet-energyBtnPrice'); seBtn.innerText = eBtnText; seBtn.disabled = eDisabled; seBtn.style.backgroundColor = eDisabled ? "#c4c4c4" : "#2ea043";
+
+            let rLvl = userUpgrades.regen, rBadge = `Lvl ${rLvl + 1}`;
+            let rDesc = `Sekundiga +${shopData.regen.levels[rLvl]} energiya`;
+            let rNextText = rLvl < shopData.regen.prices.length ? `Keyingisi: ${shopData.regen.levels[rLvl + 1]}` : "Maksimal daraja";
+            let rBtnText = rLvl < shopData.regen.prices.length ? shopData.regen.prices[rLvl].toLocaleString() : "MAX";
+            let rDisabled = rLvl >= shopData.regen.prices.length;
+            document.getElementById('sheet-regenLvlBadge').innerText = rBadge; document.getElementById('sheet-regenDesc').innerText = rDesc; document.getElementById('sheet-regenNext').innerText = rNextText;
+            let srBtn = document.getElementById('sheet-regenBtnPrice'); srBtn.innerText = rBtnText; srBtn.disabled = rDisabled; srBtn.style.backgroundColor = rDisabled ? "#c4c4c4" : "#2ea043";
+        }
+        renderShop();
+
+        function buyBoost(type) {
+            let currentLvl = userUpgrades[type], price = shopData[type].prices[currentLvl];
+            if (price === undefined) return showToast("Maksimal darajaga yetgansiz! ⚠️"); 
+            if (score >= price) {
+                score -= price; userUpgrades[type]++;
+                if(type === 'energy') {
+                    let oldLimit = shopData.energy.limit[currentLvl], newLimit = shopData.energy.limit[userUpgrades.energy];
+                    dailyLimit += (newLimit - oldLimit); maxEnergy = shopData.energy.max[userUpgrades.energy];
+                }
+                updateScoreDisplays(); limitTextEl.innerText = dailyLimit.toLocaleString(); updateEnergyUI(); renderShop(); showToast("Muvaffaqiyatli xarid qilindi! ✅");
+            } else { showToast("Hisobingizda yetarli loot mavjud emas! ❌"); }
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.app-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function switchShopCategory(catId, element) {
+            document.querySelectorAll('.shop-tab-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            document.querySelectorAll('#tab-shop .shop-category').forEach(cat => cat.style.display = 'none');
+            document.getElementById('cat-' + catId).style.display = 'block';
+            
+            let firstBox = document.querySelector('#cat-' + catId + ' .uc-box');
+            if(firstBox) {
+                firstBox.click();
+            }
+        }
+
+        let selectedItemPrice = { 'uc': 6000000, 'ff': 5000000, 'mlbb': 8000000 };
+        function selectItem(element, price, type) {
+            let parent = element.parentElement;
+            parent.querySelectorAll('.uc-box').forEach(box => box.classList.remove('active'));
+            element.classList.add('active');
+            selectedItemPrice[type] = price;
+        }
+
+        function requestWithdraw(type) {
+            let id, nick, zone = "";
+            let price = selectedItemPrice[type];
+            
+            if (type === 'uc') {
+                id = document.getElementById('uc-id').value; nick = document.getElementById('uc-nick').value;
+                if (id === "" || nick === "") return showToast("PUBG ID va NIK ni kiriting! ⚠️");
+            } else if (type === 'ff') {
+                id = document.getElementById('ff-id').value; nick = document.getElementById('ff-nick').value; 
+                if (id === "" || nick === "") return showToast("FF ID va NIK ni kiriting! ⚠️");
+            } else if (type === 'mlbb') {
+                id = document.getElementById('mlbb-id').value; zone = document.getElementById('mlbb-zone').value; nick = document.getElementById('mlbb-nick').value; 
+                if (id === "" || zone === "" || nick === "") return showToast("ID, Zone va NIK ni kiriting! ⚠️");
+                id = id + "-" + zone;
+            } 
+
+            if (score >= price) {
+                score -= price; updateScoreDisplays();
+                let safeNick = nick.replace(/[^a-zA-Z0-9]/g, ''); if (safeNick === "") safeNick = "Nomsiz";
+                let botUsername = "LootTapBot"; 
+                let url = `https://t.me/${botUsername}?start=withdraw_${type}_${price}_${score}_${id}_${safeNick}`;
+                window.Telegram.WebApp.openTelegramLink(url);
+                showToast("Xarid qabul qilindi! Reyting yangilanmoqda... 🔄");
+                setTimeout(() => { loadLeaderboard(); }, 1500);
+            } else { showToast("Hisobingizda yetarli loot mavjud emas! ❌"); }
+        }
+
+        function switchRefCategory(catId, element) {
+            document.querySelectorAll('#tab-friends .shop-tab-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            document.querySelectorAll('#tab-friends .shop-category').forEach(cat => cat.style.display = 'none');
+            document.getElementById('ref-cat-' + catId).style.display = 'block';
+        }
+
+        let selectedRefCost = { 'uc': {cost: 120, name: "120 UC"}, 'ff': {cost: 120, name: "240 Almaz"}, 'mlbb': {cost: 120, name: "170 Almaz"} };
+        
+        function selectRefItem(element, cost, prizeName) {
+            let parent = element.parentElement;
+            parent.querySelectorAll('.ref-box').forEach(box => box.classList.remove('active'));
+            element.classList.add('active');
+            
+            let categoryId = parent.parentElement.id;
+            let type = categoryId.replace("ref-cat-", "");
+            selectedRefCost[type] = {cost: cost, name: prizeName};
+        }
+
+        function requestRefWithdraw(type) {
+            let id, nick, zone = "";
+            let cost = selectedRefCost[type].cost;
+            let prizeName = selectedRefCost[type].name.replace(" ", "");
+            
+            if (type === 'uc') {
+                id = document.getElementById('ref-uc-id').value; nick = document.getElementById('ref-uc-nick').value;
+                if (id === "" || nick === "") return showToast("PUBG ID va NIK ni kiriting! ⚠️");
+            } else if (type === 'ff') {
+                id = document.getElementById('ref-ff-id').value; nick = document.getElementById('ref-ff-nick').value; 
+                if (id === "" || nick === "") return showToast("FF ID va NIK ni kiriting! ⚠️");
+            } else if (type === 'mlbb') {
+                id = document.getElementById('ref-mlbb-id').value; zone = document.getElementById('ref-mlbb-zone').value; nick = document.getElementById('ref-mlbb-nick').value; 
+                if (id === "" || zone === "" || nick === "") return showToast("ID, Zone va NIK ni kiriting! ⚠️");
+                id = id + "-" + zone;
+            } 
+
+            let safeNick = nick.replace(/[^a-zA-Z0-9]/g, ''); if (safeNick === "") safeNick = "Nomsiz";
+            let botUsername = "LootTapBot"; 
+            
+            let url = `https://t.me/${botUsername}?start=refwithdraw_${prizeName}_${cost}_${id}_${safeNick}`;
+            window.Telegram.WebApp.openTelegramLink(url);
+            showToast("Tekshirilmoqda... Botingizga qayting! 🔄");
+        }
+
+        function copyRefLink() {
+            let refLink = `https://t.me/LootTapBot?start=ref_${userId}`;
+            navigator.clipboard.writeText(refLink).then(() => {
+                showToast("Taklif havolasi muvaffaqiyatli nusxalandi! ✅");
+            }).catch(err => {
+                showToast("Xatolik! Manashu ID orqali chaqiring: ref_" + userId);
+            });
+        }
+
+        function handleTap(e) {
+            let tapPower = shopData.tap.levels[userUpgrades.tap];
+            if (energy >= tapPower && dailyLimit >= tapPower) {
+                score += tapPower; energy -= tapPower; dailyLimit -= tapPower;
+                updateScoreDisplays(); limitTextEl.innerText = dailyLimit.toLocaleString(); updateEnergyUI();
+                let touchX = e.clientX || (e.touches && e.touches[0].clientX), touchY = e.clientY || (e.touches && e.touches[0].clientY);
+                if(!touchX) { const rect = tapBtn.getBoundingClientRect(); touchX = rect.left + rect.width / 2; touchY = rect.top + rect.height / 2; }
+                const floatNum = document.createElement('div'); floatNum.className = 'floating-number'; floatNum.innerText = '+' + tapPower; floatNum.style.left = `${touchX - 10}px`; floatNum.style.top = `${touchY - 20}px`;
+                document.getElementById('screenTap').appendChild(floatNum); setTimeout(() => { floatNum.remove(); }, 1000);
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+        tapBtn.addEventListener('mousedown', handleTap);
+        tapBtn.addEventListener('touchstart', (e) => { e.preventDefault(); for(let i=0; i < e.touches.length; i++) handleTap(e.touches[i]); });
+
+        setInterval(() => {
+            let regenAmount = shopData.regen.levels[userUpgrades.regen];
+            if (energy < maxEnergy) {
+                energy += regenAmount; if(energy > maxEnergy) energy = maxEnergy;
+                updateEnergyUI();
+            }
+        }, 1000);
+
+        let isSpinView = false;
+        function toggleScreen() {
+            isSpinView = !isSpinView;
+            const sTap = document.getElementById('screenTap'), sSpin = document.getElementById('screenSpin');
+            const sTab = document.getElementById('sideTab'), arrow = document.getElementById('tabArrow');
+            const txt = document.getElementById('tabText'), enWrap = document.getElementById('energyWrapper');
+            if (isSpinView) {
+                sTap.style.transform = 'translateX(-100%)'; sSpin.style.transform = 'translateX(-100%)';
+                sTab.classList.add('moved-left'); arrow.innerText = '›'; txt.innerText = 'Tap'; enWrap.style.display = 'none'; 
+            } else {
+                sTap.style.transform = 'translateX(0)'; sSpin.style.transform = 'translateX(0)';
+                sTab.classList.remove('moved-left'); arrow.innerText = '‹'; txt.innerText = 'Spin'; enWrap.style.display = 'block';
+            }
+        }
+
+        const prizes = [
+            { id: 0, name: '300k loot', value: 300000 }, { id: 1, name: '100k loot', value: 100000 }, 
+            { id: 2, name: '200k loot', value: 200000 }, { id: 3, name: '100k loot', value: 100000 }, 
+            { id: 4, name: '300k loot', value: 300000 }, { id: 5, name: '100k loot', value: 100000 }, 
+            { id: 6, name: '200k loot', value: 200000 }, { id: 7, name: '100k loot', value: 100000 }
+        ];
+
+        let isSpinning = false, currentRotation = 0, countdownInterval;
+        function startSpin() {
+            if (isSpinning) return;
+            
+            // Spin faqat bot orqali ishlatilishi uchun hozircha localstorage vaqtincha ishlatiladi
+            let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin')) || 0;
+            if(Date.now() < nextSpinTime) return showToast("24 soatda faqat 1 marta!");
+            
+            isSpinning = true;
+            nextSpinTime = Date.now() + (24 * 60 * 60 * 1000);
+            localStorage.setItem('loottap_next_spin', nextSpinTime);
+            
+            const wheel = document.getElementById('wheel'), btn = document.getElementById('spinActionBtn');
+            let randPercent = Math.random() * 100;
+            let randIndex = randPercent < 20 ? 1 : randPercent < 40 ? 3 : randPercent < 60 ? 5 : randPercent < 80 ? 7 : randPercent < 89 ? 2 : randPercent < 98 ? 6 : randPercent < 99 ? 0 : 4;
+            const prize = prizes[randIndex], sliceCenter = 22.5 + (randIndex * 45), offset = Math.floor(Math.random() * 30) - 15;
+            const targetRotation = currentRotation + (360 * 5) + (90 - sliceCenter + offset);
+            wheel.style.transform = `rotate(${targetRotation}deg)`; currentRotation = targetRotation;
+            btn.className = "spin-btn-disabled"; btn.innerText = "Aylantirilmoqda...";
+            setTimeout(() => {
+                score += prize.value; updateScoreDisplays(); 
+                showToast(`🎉 Tabriklaymiz! Sizga ${prize.name} tushdi!`); checkSpinStatus();
+            }, 4000); 
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            toast.innerText = message; toast.style.bottom = "100px"; 
+            setTimeout(() => { toast.style.bottom = "-100px"; }, 3000);
+        }
+
+        function checkSpinStatus() {
+            let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin')) || 0;
+            const btn = document.getElementById('spinActionBtn'); let now = Date.now();
+            if (now < nextSpinTime) {
+                isSpinning = true; btn.className = "spin-btn-disabled";
+                clearInterval(countdownInterval);
+                countdownInterval = setInterval(() => {
+                    now = Date.now(); let timeLeft = Math.floor((nextSpinTime - now) / 1000);
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval); btn.className = "spin-btn-active"; btn.innerText = "Aylantirish"; isSpinning = false;
+                    } else {
+                        const h = Math.floor(timeLeft / 3600).toString().padStart(2, '0'), m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0'), s = (timeLeft % 60).toString().padStart(2, '0');
+                        btn.innerText = `Keyingi aylantirish: ${h}:${m}:${s}`;
+                    }
+                }, 1000);
+            }
+        }
+        checkSpinStatus();
+        
+        function openBoostSheet() {
+            if(document.getElementById('sheetScoreDisplay')) document.getElementById('sheetScoreDisplay').innerText = score.toLocaleString();
+            document.getElementById('boostOverlay').style.display = 'block';
+            setTimeout(() => { document.getElementById('boostOverlay').classList.add('show'); document.getElementById('boostSheet').classList.add('open'); }, 10);
+        }
+
+        function closeBoostSheet() {
+            document.getElementById('boostSheet').classList.remove('open'); document.getElementById('boostOverlay').classList.remove('show');
+            setTimeout(() => { document.getElementById('boostOverlay').style.display = 'none'; }, 300);
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch('rating.json?t=' + new Date().getTime()); 
+                const users = await response.json();
+                const rankList = document.getElementById('rating-list');
+                if (rankList) {
+                    rankList.innerHTML = ''; 
+                    users.forEach((user, index) => {
+                        let rankIcon = index + 1, medalClass = "";
+                        if (index === 0) { rankIcon = "🥇"; medalClass = " gold"; } else if (index === 1) { rankIcon = "🥈"; medalClass = " silver"; } else if (index === 2) { rankIcon = "🥉"; medalClass = " bronze"; }
+                        let firstLetter = user.username && user.username !== "Unknown" ? user.username.charAt(0).toUpperCase() : "U";
+                        rankList.innerHTML += `<div class="rank-item"><div class="rank-number${medalClass}" style="width: 40px;">${rankIcon}</div><div class="rank-avatar">${firstLetter}</div><div class="rank-details"><div class="rank-name">${user.username}</div><div class="rank-score">💎 ${user.loot.toLocaleString()} loot</div></div></div>`;
+                    });
+                }
+            } catch (err) { console.error("Loot Reyting yuklanmadi:", err); }
+        }
+
+        async function loadRefLeaderboard() {
+            try {
+                const response = await fetch('ref_rating.json?t=' + new Date().getTime()); 
+                const refs = await response.json();
+                const refRankList = document.getElementById('ref-rating-list');
+                if (refRankList) {
+                    refRankList.innerHTML = ''; 
+                    if(refs.length === 0) {
+                        refRankList.innerHTML = "<p style='text-align:center; color:#8b949e;'>Hozircha hech kim do'st taklif qilmadi.</p>";
+                        return;
+                    }
+                    refs.forEach((user, index) => {
+                        let rankIcon = index + 1, medalClass = "";
+                        if (index === 0) { rankIcon = "🥇"; medalClass = " gold"; } else if (index === 1) { rankIcon = "🥈"; medalClass = " silver"; } else if (index === 2) { rankIcon = "🥉"; medalClass = " bronze"; }
+                        let firstLetter = user.username && user.username !== "Unknown" ? user.username.charAt(0).toUpperCase() : "U";
+                        refRankList.innerHTML += `<div class="rank-item"><div class="rank-number${medalClass}" style="width: 40px;">${rankIcon}</div><div class="rank-avatar">${firstLetter}</div><div class="rank-details"><div class="rank-name">${user.username}</div><div class="rank-score" style="color:#ffd700;">👥 ${user.refs} ta do'st</div></div></div>`;
+                    });
+                }
+            } catch (err) { console.error("Do'stlar reytingi yuklanmadi:", err); }
+        }
+
+        setInterval(() => {
+            if (document.getElementById('tab-rating').classList.contains('active')) loadLeaderboard();
+            if (document.getElementById('tab-friends').classList.contains('active')) loadRefLeaderboard();
+        }, 5000);
+
+        loadLeaderboard();
+        loadRefLeaderboard();
+    </script>
+</body>
+</html>
