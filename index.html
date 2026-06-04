@@ -477,25 +477,53 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
         
-        // --- YANGI: URL ORQALI MA'LUMOTLARNI O'QISH ---
+        // --- YANGI: ARVOH SAQLASH VA URL TEKSHIRUV ---
         const urlParams = new URLSearchParams(window.location.search);
-        
         let userId = urlParams.get('userid') || tg.initDataUnsafe?.user?.id || "123456";
         let userName = tg.initDataUnsafe?.user?.first_name || "O'yinchi";
-        
-        // localStorage o'rniga faqat URL dan o'qiymiz
-        let score = parseInt(urlParams.get('score')) || 0;
-        let energy = parseInt(urlParams.get('energy')) || 1000;
-        let dailyLimit = parseInt(urlParams.get('limit')) || 15000;
-        
-        let userUpgrades = {
-            tap: parseInt(urlParams.get('tap')) || 0,
-            energy: parseInt(urlParams.get('eng')) || 0,
-            regen: parseInt(urlParams.get('reg')) || 0
-        };
 
-        // Vazifalar holati esa faqat mahalliy telefonda saqlanib qolavergani yaxshi (shartmas bazaga yuklash)
-        
+        // 1. URL dan kelgan ma'lumotlar (Serverdagi kassir aytgan summa)
+        let urlScore = parseInt(urlParams.get('score')) || 0;
+        let urlEnergy = parseInt(urlParams.get('energy')) || 1000;
+        let urlLimit = parseInt(urlParams.get('limit')) || 15000;
+        let urlTap = parseInt(urlParams.get('tap')) || 0;
+        let urlEng = parseInt(urlParams.get('eng')) || 0;
+        let urlReg = parseInt(urlParams.get('reg')) || 0;
+
+        // 2. Telefon xotirasidagi ma'lumotlar (Cho'ntakdagi summa)
+        let savedScore = parseInt(localStorage.getItem('ghost_score_' + userId)) || 0;
+        let savedEnergy = parseInt(localStorage.getItem('ghost_energy_' + userId));
+        let savedLimit = parseInt(localStorage.getItem('ghost_limit_' + userId));
+        let savedTap = parseInt(localStorage.getItem('ghost_tap_' + userId)) || 0;
+        let savedEng = parseInt(localStorage.getItem('ghost_eng_' + userId)) || 0;
+        let savedReg = parseInt(localStorage.getItem('ghost_reg_' + userId)) || 0;
+
+        // 3. AQLLI TANLOV (Qaysi biri ko'p bo'lsa, shuni olamiz!)
+        let score = Math.max(urlScore, savedScore);
+        let userUpgrades = {
+            tap: Math.max(urlTap, savedTap),
+            energy: Math.max(urlEng, savedEng),
+            regen: Math.max(urlReg, savedReg)
+        };
+        // Energiya va limitni maxsus tekshiramiz (chunki ular sarflanuvchi narsalar)
+        let energy = isNaN(savedEnergy) ? urlEnergy : savedEnergy; 
+        let dailyLimit = isNaN(savedLimit) ? urlLimit : savedLimit;
+
+        // --- ARVOH SAQLASH FUNKSIYASI ---
+        function ghostSave() {
+            localStorage.setItem('ghost_score_' + userId, score);
+            localStorage.setItem('ghost_energy_' + userId, Math.floor(energy));
+            localStorage.setItem('ghost_limit_' + userId, dailyLimit);
+            localStorage.setItem('ghost_tap_' + userId, userUpgrades.tap);
+            localStorage.setItem('ghost_eng_' + userId, userUpgrades.energy);
+            localStorage.setItem('ghost_reg_' + userId, userUpgrades.regen);
+        }
+
+        // Har 2 soniyada o'yinchi sezmagan holda xotiraga yozamiz
+        setInterval(() => {
+            ghostSave();
+        }, 2000);
+
         document.getElementById('username').innerText = userName;
         document.getElementById('myRankName').innerText = userName;
         document.getElementById('myRankAvatar').innerText = userName.charAt(0).toUpperCase();
@@ -528,7 +556,7 @@
         }
 
         function updateEnergyUI() {
-            energyTextEl.innerText = energy;
+            energyTextEl.innerText = Math.floor(energy);
             maxEnergyTextEl.innerText = maxEnergy;
             const percentage = (energy / maxEnergy) * 100;
             energyBarEl.style.width = `${percentage}%`;
@@ -538,15 +566,12 @@
         limitTextEl.innerText = dailyLimit.toLocaleString();
         updateEnergyUI();
 
-        // saveData funksiyasi endi bo'sh qoldi (kodni buzmasligi uchun) chunki hamma narsa faqat bot orqali saqlanadi
-        function saveData() { }
-
-        // --- YANGI: SAQLASH VA CHIQISH TUGMASI ---
+        // Serverga kuchli saqlash va Reytingni yangilash (Xuddi oldingidek zo'r ishlaydi)
         function saveToBotAndExit() {
             let botUsername = "LootTapBot"; 
-            let url = `https://t.me/${botUsername}?start=save_${score}_${energy}_${userUpgrades.tap}_${userUpgrades.energy}_${userUpgrades.regen}_${dailyLimit}`;
+            let url = `https://t.me/${botUsername}?start=save_${score}_${Math.floor(energy)}_${userUpgrades.tap}_${userUpgrades.energy}_${userUpgrades.regen}_${dailyLimit}`;
             
-            showToast("Ma'lumotlar saqlanmoqda... 🔄");
+            showToast("Reyting yangilanmoqda va saqlanmoqda... 🔄");
             setTimeout(() => {
                 window.Telegram.WebApp.openTelegramLink(url);
             }, 1000);
@@ -588,7 +613,8 @@
 
             score += rewardAmount;
             updateScoreDisplays();
-            localStorage.setItem('task_done_' + taskId, 'true'); // Vazifalar faqat shu yerda lokal saqlanadi
+            ghostSave(); // Mukammallik uchun shu zahoti saqlaymiz
+            localStorage.setItem('task_done_' + taskId, 'true'); 
             
             showToast(`Vazifa muvaffaqiyatli tasdiqlandi! +${rewardAmount.toLocaleString()} loot ✅`);
             setTimeout(() => { moveTaskToBottom(taskId); }, 500);
@@ -654,7 +680,9 @@
                     let oldLimit = shopData.energy.limit[currentLvl], newLimit = shopData.energy.limit[userUpgrades.energy];
                     dailyLimit += (newLimit - oldLimit); maxEnergy = shopData.energy.max[userUpgrades.energy];
                 }
-                updateScoreDisplays(); limitTextEl.innerText = dailyLimit.toLocaleString(); updateEnergyUI(); renderShop(); showToast("Muvaffaqiyatli xarid qilindi! ✅");
+                updateScoreDisplays(); limitTextEl.innerText = dailyLimit.toLocaleString(); updateEnergyUI(); renderShop(); 
+                ghostSave(); // Xarid qilingandan keyin ham saqlaymiz
+                showToast("Muvaffaqiyatli xarid qilindi! ✅");
             } else { showToast("Hisobingizda yetarli loot mavjud emas! ❌"); }
         }
 
@@ -702,7 +730,7 @@
             } 
 
             if (score >= price) {
-                score -= price; updateScoreDisplays();
+                score -= price; updateScoreDisplays(); ghostSave();
                 let safeNick = nick.replace(/[^a-zA-Z0-9]/g, ''); if (safeNick === "") safeNick = "Nomsiz";
                 let botUsername = "LootTapBot"; 
                 let url = `https://t.me/${botUsername}?start=withdraw_${type}_${price}_${score}_${id}_${safeNick}`;
@@ -770,6 +798,7 @@
             if (energy >= tapPower && dailyLimit >= tapPower) {
                 score += tapPower; energy -= tapPower; dailyLimit -= tapPower;
                 updateScoreDisplays(); limitTextEl.innerText = dailyLimit.toLocaleString(); updateEnergyUI();
+                ghostSave(); // Ekranga bosilganda darhol saqlanadi
                 let touchX = e.clientX || (e.touches && e.touches[0].clientX), touchY = e.clientY || (e.touches && e.touches[0].clientY);
                 if(!touchX) { const rect = tapBtn.getBoundingClientRect(); touchX = rect.left + rect.width / 2; touchY = rect.top + rect.height / 2; }
                 const floatNum = document.createElement('div'); floatNum.className = 'floating-number'; floatNum.innerText = '+' + tapPower; floatNum.style.left = `${touchX - 10}px`; floatNum.style.top = `${touchY - 20}px`;
@@ -814,7 +843,6 @@
         function startSpin() {
             if (isSpinning) return;
             
-            // Spin faqat bot orqali ishlatilishi uchun hozircha localstorage vaqtincha ishlatiladi
             let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin')) || 0;
             if(Date.now() < nextSpinTime) return showToast("24 soatda faqat 1 marta!");
             
@@ -830,7 +858,7 @@
             wheel.style.transform = `rotate(${targetRotation}deg)`; currentRotation = targetRotation;
             btn.className = "spin-btn-disabled"; btn.innerText = "Aylantirilmoqda...";
             setTimeout(() => {
-                score += prize.value; updateScoreDisplays(); 
+                score += prize.value; updateScoreDisplays(); ghostSave();
                 showToast(`🎉 Tabriklaymiz! Sizga ${prize.name} tushdi!`); checkSpinStatus();
             }, 4000); 
         }
