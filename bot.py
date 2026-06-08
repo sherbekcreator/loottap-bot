@@ -2,6 +2,23 @@ import telebot
 import sqlite3
 import json
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from flask import Flask
+from threading import Thread
+
+# --- UYG'OTKICH (WEB SERVER) SOZLAMALARI ---
+app = Flask(__name__)
+
+@app.route('/')
+def main():
+    return "LootTap Bot Serveri 100% Jangovar Holatda!"
+
+def run():
+    app.run(host="0.0.0.0", port=8080)
+
+def keep_alive():
+    server = Thread(target=run)
+    server.start()
+# ------------------------------------------
 
 # Sizning API kalitingiz
 TOKEN = '8610358967:AAHAoZ6UKbjouwpdYnJHirdzRgRLIL5i2BI'
@@ -253,4 +270,5 @@ def clear_refs(message):
         bot.send_message(message.chat.id, "✅ Barcha test qilingan do'stlar nollashtirildi! (Lootlar saqlanib qoldi)")
 
 print("💎 LootTap Bot serveri ishga tushdi! Baza muvaffaqiyatli ulandi...")
+keep_alive() # Mana shu bizning ko'rinmas uyg'otkichimiz
 bot.infinity_polling()
