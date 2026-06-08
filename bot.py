@@ -2,17 +2,36 @@ import telebot
 import sqlite3
 import json
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from flask import Flask, send_from_directory, make_response
+from threading import Thread
 
+# --- UYG'OTKICH VA REYTING TARQATUVCHI ---
+app = Flask(__name__)
+
+@app.route('/')
+def main():
+    return "LootTap Bot Serveri 100% Jangovar Holatda!"
+
+@app.route('/<path:path>')
+def serve_file(path):
+    response = make_response(send_from_directory('.', path))
+    # Barcha saytlarga, jumladan GitHub'ga reytingni olishga ruxsat beramiz!
+    response.headers['Access-Control-Allow-Origin'] = '*' 
+    return response
+
+def run():
+    app.run(host="0.0.0.0", port=10000)
+
+def keep_alive():
+    server = Thread(target=run)
+    server.start()
+
+# --- SOZLAMALAR ---
 # Sizning API kalitingiz
 TOKEN = '8610358967:AAHAoZ6UKbjouwpdYnJHirdzRgRLIL5i2BI'
 bot = telebot.TeleBot(TOKEN)
 
-# FAQAT SHU KANAL STARTDA MAJBURIY SO'RALADI
-CHANNELS = [
-    {"name": "NIKSOTAMAN", "id": "@niksotaman", "url": "https://t.me/niksotaman"}
-]
-
-# GITHUB HAQIQIY HAVOLANGIZNI SHU YERGA QO'YAMIZ (Ngrok o'rniga!)
+# GITHUB HAQIQIY HAVOLANGIZ (O'yin shu yerdan ochiladi)
 WEB_APP_URL = "https://sherbekcreator.github.io/loottap-bot/"
 
 # --- 1. MA'LUMOTLAR BAZASI ---
@@ -29,7 +48,7 @@ cursor.execute('''
     )
 ''')
 
-# Eski bazani avtomatik yangilash (Agar ustunlar yo'q bo'lsa, o'zi qo'shadi)
+# Eski bazani avtomatik yangilash
 try:
     cursor.execute("ALTER TABLE users ADD COLUMN upg_tap INTEGER DEFAULT 0")
     cursor.execute("ALTER TABLE users ADD COLUMN upg_energy INTEGER DEFAULT 0")
@@ -37,7 +56,7 @@ try:
     cursor.execute("ALTER TABLE users ADD COLUMN daily_limit INTEGER DEFAULT 15000")
     conn.commit()
 except Exception:
-    pass # Agar ustunlar allaqachon mavjud bo'lsa, xatolik bermaydi
+    pass 
 
 conn.commit()
 
@@ -53,23 +72,6 @@ def update_rating_json():
     with open("ref_rating.json", "w", encoding="utf-8") as f:
         json.dump(top_refs, f)
 
-def check_sub(user_id):
-    for channel in CHANNELS:
-        try:
-            status = bot.get_chat_member(channel['id'], user_id).status
-            if status in ['left', 'kicked']:
-                return False
-        except Exception:
-            return False
-    return True
-
-def force_sub_markup():
-    markup = InlineKeyboardMarkup(row_width=1)
-    for ch in CHANNELS:
-        markup.add(InlineKeyboardButton(text=ch['name'], url=ch['url']))
-    markup.add(InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_subscription"))
-    return markup
-
 def main_menu_markup(user_id):
     # MA'LUMOTLARNI BAZADAN OLISH VA WEB APPGA JO'NATISH
     cursor.execute("SELECT score, energy, upg_tap, upg_energy, upg_regen, daily_limit FROM users WHERE user_id = ?", (user_id,))
@@ -80,7 +82,6 @@ def main_menu_markup(user_id):
         score, energy, upg_tap, upg_energy, upg_regen, daily_limit = (0, 1000, 0, 0, 0, 15000)
 
     markup = InlineKeyboardMarkup()
-    # URL orqali ma'lumotlarni HTMLga xavfsiz uzatamiz
     full_url = f"{WEB_APP_URL}?userid={user_id}&score={score}&energy={energy}&tap={upg_tap}&eng={upg_energy}&reg={upg_regen}&limit={daily_limit}"
     webapp = WebAppInfo(url=full_url)
     markup.add(InlineKeyboardButton(text="⚡️ > BOSHLASH <", web_app=webapp))
@@ -205,59 +206,31 @@ def start_command(message):
     conn.commit()
     update_rating_json()
 
-    if check_sub(user_id):
-        msg_text = (f"👋, {first_name}!\n"
-                    f"🎮 PUBG UC va FF , MLBB Almaz ishlash endi juda oson!\n"
-                    f"Bot orqali Loot to'plang va ularni UC yoki Almazga almashtiring 💎\n\n"
-                    f"🔥 Qanday ishlaydi?\n"
-                    f"• Botga kiring\n"
-                    f"• Vazifalarni bajaring ✅\n"
-                    f"• Loot to'plang 💰\n"
-                    f"• UC va Almazga almashtiring 🎁\n\n"
-                    f"⚡️ Tez | Oson | Ishonchli\n\n"
-                    f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
-        bot.send_message(message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
-    else:
-        msg_text = "⚠️ **Majburiy obuna talab qilinadi!**\n\nDavom etish uchun quyidagi kanalga a'zo bo'ling 👇"
-        bot.send_message(message.chat.id, msg_text, reply_markup=force_sub_markup(), parse_mode='Markdown')
-
-@bot.callback_query_handler(func=lambda call: call.data == "check_subscription")
-def callback_check(call):
-    if check_sub(call.from_user.id):
-        bot.delete_message(call.message.chat.id, call.message.message_id)
-        cursor.execute('INSERT OR IGNORE INTO users (user_id, first_name) VALUES (?, ?)', (call.from_user.id, call.from_user.first_name))
-        conn.commit()
-        update_rating_json()
-
-        msg_text = (f"👋, {call.from_user.first_name}!\n"
-                    f"🎮 PUBG UC va FF , MLBB Almaz ishlash endi juda oson!\n"
-                    f"Bot orqali Loot to'plang va ularni UC yoki Almazga almashtiring 💎\n\n"
-                    f"🔥 Qanday ishlaydi?\n"
-                    f"• Botga kiring\n"
-                    f"• Vazifalarni bajaring ✅\n"
-                    f"• Loot to'plang 💰\n"
-                    f"• UC va Almazga almashtiring 🎁\n\n"
-                    f"⚡️ Tez | Oson | Ishonchli\n\n"
-                    f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
-        bot.send_message(call.message.chat.id, msg_text, reply_markup=main_menu_markup(call.from_user.id))
-    else:
-        bot.answer_callback_query(call.id, "❌ Hali kanalga obuna bo'lmadingiz!", show_alert=True)
+    msg_text = (f"👋, {first_name}!\n"
+                f"🎮 PUBG UC va FF, MLBB Almaz ishlash endi juda oson!\n"
+                f"Bot orqali Loot to'plang va ularni UC yoki Almazga almashtiring 💎\n\n"
+                f"🔥 Qanday ishlaydi?\n"
+                f"• Botga kiring\n"
+                f"• Vazifalarni bajaring ✅\n"
+                f"• Loot to'plang 💰\n"
+                f"• UC va Almazga almashtiring 🎁\n\n"
+                f"⚡️ Tez | Oson | Ishonchli\n\n"
+                f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
+    bot.send_message(message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
 
 # --- MAXFIY ADMIN KOMANDASI: O'yinchiga loot qo'shib berish ---
 @bot.message_handler(commands=['give'])
 def give_loot_admin(message):
-    ADMIN_ID = 8361233416 # Sizning admin ID raqamingiz
+    ADMIN_ID = 8361233416
 
     if message.from_user.id != ADMIN_ID:
-        return # Admin bo'lmasa, kod ishlamaydi va hech narsa qaytarmaydi
+        return 
 
     try:
-        # Buyruqni qismlarga ajratamiz (masalan: /give 987654321 59000000)
         args = message.text.split()
         target_id = int(args[1])
         amount = int(args[2])
 
-        # Foydalanuvchini bazadan tekshirish va yangilash
         cursor.execute("SELECT score FROM users WHERE user_id=?", (target_id,))
         result = cursor.fetchone()
 
@@ -273,7 +246,7 @@ def give_loot_admin(message):
     except Exception as e:
         bot.reply_to(message, "⚠️ Xato format!\nTo'g'ri usul: /give ID MIQDOR\nMasalan: /give 123456789 59000000")
 
-# --- FAQAT DO'STLARNI TOZALASH (SINOV UCHUN) ---
+# --- FAQAT DO'STLARNI TOZALASH ---
 @bot.message_handler(commands=['clear_refs'])
 def clear_refs(message):
     if message.from_user.id == 8361233416:
@@ -283,4 +256,5 @@ def clear_refs(message):
         bot.send_message(message.chat.id, "✅ Barcha test qilingan do'stlar nollashtirildi! (Lootlar saqlanib qoldi)")
 
 print("💎 LootTap Bot serveri ishga tushdi! Baza muvaffaqiyatli ulandi...")
+keep_alive()
 bot.infinity_polling()
