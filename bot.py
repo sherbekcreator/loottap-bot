@@ -29,8 +29,8 @@ CHANNELS = [
     {"name": "NIKSOTAMAN", "id": "@niksotaman", "url": "https://t.me/niksotaman"}
 ]
 
-# NGROK HAVOLANGIZNI SHU YERGA QO'YASIZ
-WEB_APP_URL = "https://oblivion-lisp-stable.ngrok-free.dev" 
+# RENDR HAVOLANGIZNI SHU YERGA QO'YASIZ
+WEB_APP_URL = "https://loottap-bot.onrender.com" 
 
 # --- 1. MA'LUMOTLAR BAZASI ---
 conn = sqlite3.connect('loottap.db', check_same_thread=False)
