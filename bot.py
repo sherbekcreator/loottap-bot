@@ -1,6 +1,7 @@
 import telebot
 import sqlite3
 import json
+import os
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from flask import Flask, send_from_directory, make_response
 from threading import Thread
@@ -14,6 +15,10 @@ def main():
 
 @app.route('/<path:path>')
 def serve_file(path):
+    # MUHIM YANGILIK: Agar fayl hali yo'q bo'lsa, uni darhol yaratamiz!
+    if not os.path.exists(path):
+        update_rating_json()
+        
     response = make_response(send_from_directory('.', path))
     # Barcha saytlarga, jumladan GitHub'ga reytingni olishga ruxsat beramiz!
     response.headers['Access-Control-Allow-Origin'] = '*' 
@@ -27,8 +32,8 @@ def keep_alive():
     server.start()
 
 # --- SOZLAMALAR ---
-# Sizning API kalitingiz
-TOKEN = '8610358967:AAH1M-IgQse3zB2dwWCfkR8LUQuYkIEkx8g'
+# Sizning API kalitingiz (BotFatherdan olgan YANGI TOKENINGIZ shu yerda turishi kerak)
+TOKEN = '8610358967:AAHAoZ6UKbjouwpdYnJHirdzRgRLIL5i2BI'
 bot = telebot.TeleBot(TOKEN)
 
 # GITHUB HAQIQIY HAVOLANGIZ (O'yin shu yerdan ochiladi)
@@ -254,6 +259,9 @@ def clear_refs(message):
         conn.commit()
         update_rating_json()
         bot.send_message(message.chat.id, "✅ Barcha test qilingan do'stlar nollashtirildi! (Lootlar saqlanib qoldi)")
+
+# MUHIM YANGILIK: SERVER ISHGA TUSHISHI BILAN REYTINGNI YARATAMIZ!
+update_rating_json()
 
 print("💎 LootTap Bot serveri ishga tushdi! Baza muvaffaqiyatli ulandi...")
 keep_alive()
