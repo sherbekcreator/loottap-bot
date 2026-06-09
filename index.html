@@ -208,7 +208,7 @@
             <h2>Do'stlaringizni taklif qiling!</h2>
             <p>Do'stlar to'plab, tekinga o'yin valyutasini oling!</p>
         </div>
-        <button class="invite-btn" onclick="copyRefLink()">🔗 Taklif havolasini nusxalash</button>
+        <button class="invite-btn" onclick="copyRefLink()">📲 Havolani ulashish (Do'stlarga jo'natish)</button>
         <div class="ref-rule">
             ⚠️ <b>QOIDA:</b> Firibgarlikni oldini olish uchun yutuq olishda hisobingizda kamida <b>10,000,000 Loot</b> bo'lishi shart! (Lootingiz yechilmaydi)
         </div>
@@ -777,13 +777,23 @@
             showToast("Tekshirilmoqda... Botingizga qayting! 🔄");
         }
 
+        // --- MUHIM O'ZGARISH: NATIVE ULASHISH FUNKSIYASI ---
         function copyRefLink() {
-            let refLink = `https://t.me/LootTapBot?start=ref_${userId}`;
-            navigator.clipboard.writeText(refLink).then(() => {
-                showToast("Taklif havolasi muvaffaqiyatli nusxalandi! ✅");
-            }).catch(err => {
-                showToast("Xatolik! Manashu ID orqali chaqiring: ref_" + userId);
-            });
+            let botUsername = "LootTapBot"; // Botingiz manzili
+            let refLink = `https://t.me/${botUsername}?start=ref_${userId}`;
+            
+            // Do'stlarga boradigan tayyor matn
+            let shareText = `🎮 PUBG UC va FF, MLBB Almaz ishlash endi juda oson!\nBot orqali Loot to'plang va ularni UC yoki Almazga almashtiring 💎\n\nKiring va sovg'a oling! 👇`;
+            
+            // Telegram Share URL yig'ish
+            let shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
+            
+            // Oynani ochish
+            if (tg && tg.openTelegramLink) {
+                tg.openTelegramLink(shareUrl);
+            } else {
+                window.open(shareUrl, '_blank');
+            }
         }
 
         function handleTap(e) {
