@@ -33,7 +33,7 @@ def keep_alive():
 
 # --- SOZLAMALAR ---
 # Sizning API kalitingiz (BotFatherdan olgan YANGI TOKENINGIZ shu yerda turishi kerak)
-TOKEN = '8610358967:AAHAoZ6UKbjouwpdYnJHirdzRgRLIL5i2BI'
+TOKEN = '8610358967:AAEZWjXrmLf5KtO3Fs1S6GthfQUfdpE-Vys'
 bot = telebot.TeleBot(TOKEN)
 
 # GITHUB HAQIQIY HAVOLANGIZ (O'yin shu yerdan ochiladi)
