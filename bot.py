@@ -2,6 +2,7 @@ import telebot
 import sqlite3
 import json
 import os
+import time
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from flask import Flask, send_from_directory, make_response
 from threading import Thread
@@ -32,7 +33,7 @@ def keep_alive():
     server.start()
 
 # --- SOZLAMALAR ---
-# Sizning API kalitingiz (BotFatherdan olgan YANGI TOKENINGIZ shu yerda turishi kerak)
+# ⚠️ DIQQAT! SHU YERGA BOTFATHER'DAN OLGAN ENG YANGI TOKENINGIZNI QO'YING!
 TOKEN = '8610358967:AAEZWjXrmLf5KtO3Fs1S6GthfQUfdpE-Vys'
 bot = telebot.TeleBot(TOKEN)
 
@@ -265,4 +266,12 @@ update_rating_json()
 
 print("💎 LootTap Bot serveri ishga tushdi! Baza muvaffaqiyatli ulandi...")
 keep_alive()
+
+# Eskirib qolgan yoki parazit ulanishlarni uzib tashlash uchun tozalash:
+try:
+    bot.remove_webhook()
+    time.sleep(1)
+except Exception:
+    pass
+
 bot.infinity_polling()
