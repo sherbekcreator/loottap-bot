@@ -28,7 +28,7 @@ def keep_alive():
 
 # --- SOZLAMALAR ---
 # Sizning API kalitingiz
-TOKEN = '8610358967:AAHAoZ6UKbjouwpdYnJHirdzRgRLIL5i2BI'
+TOKEN = '8610358967:AAH1M-IgQse3zB2dwWCfkR8LUQuYkIEkx8g'
 bot = telebot.TeleBot(TOKEN)
 
 # GITHUB HAQIQIY HAVOLANGIZ (O'yin shu yerdan ochiladi)
