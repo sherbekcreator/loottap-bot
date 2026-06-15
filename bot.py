@@ -38,12 +38,20 @@ bot = telebot.TeleBot(TOKEN)
 WEB_APP_URL = "https://sherbekcreator.github.io/loottap-bot/"
 
 # --- MAJBURIY OBUNA KANALLARI ---
-# Diqqat: Bot shu kanallarda Admin bo'lishi shart!
-REQUIRED_CHANNELS = [
-    ("@ibodmarket", "IBOD MARKET", "https://t.me/ibodmarket"),
-    ("@iboduc_service", "IBOD UC SERVICE", "https://t.me/iboduc_service"),
-    ("@ibod_tournament", "IBOD TOURNAMENT", "https://t.me/ibod_tournament"),
-    ("@etoSHEYXpubg", "SHEYX PUBG", "https://t.me/etoSHEYXpubg")
+# 1. Telegram kanallar (Bot admin bo'lishi shart va bularni 100% qattiq tekshiradi)
+REQUIRED_TG_CHANNELS = [
+    ("@ibodmarket", "IBOD MARKET (TG)", "https://t.me/ibodmarket"),
+    ("@iboduc_service", "IBOD UC SERVICE (TG)", "https://t.me/iboduc_service"),
+    ("@ibod_tournament", "IBOD TOURNAMENT (TG)", "https://t.me/ibod_tournament"),
+    ("@etoSHEYXpubg", "SHEYX PUBG (TG)", "https://t.me/etoSHEYXpubg")
+]
+
+# 2. Boshqa tarmoqlar (Tugmasi chiqadi, odamlarni kirishga majbur qilamiz)
+OTHER_CHANNELS = [
+    ("SHEYX PUBG (YouTube)", "https://youtube.com/@etosheyxpubgm?si=7u6mMJ8I_8Eg896Q"),
+    ("IBOD MASHENNA (YouTube)", "https://youtube.com/@ibodmashkapubgm?si=EbTppdqyNQu2KBp9"),
+    ("IBOD TAP (YouTube)", "https://youtube.com/@ibodtap?si=c-X79pYo5t83xx_r"),
+    ("IBOD MASHENNA (Instagram)", "https://instagram.com/ibodmashennik?igsh=cms3dG11Zmt5cDhz")
 ]
 
 # --- 1. MA'LUMOTLAR BAZASI ---
@@ -97,23 +105,27 @@ def main_menu_markup(user_id):
     markup.add(InlineKeyboardButton(text="⚡️ > BOSHLASH <", web_app=webapp))
     return markup
 
-# Majburiy obunani tekshirish funksiyasi
+# Majburiy obunani tekshirish funksiyasi (Faqat TG kanallarni tekshira oladi)
 def check_all_subs(user_id):
-    for channel in REQUIRED_CHANNELS:
+    for channel in REQUIRED_TG_CHANNELS:
         try:
             member = bot.get_chat_member(channel[0], user_id)
             if member.status not in ['member', 'administrator', 'creator']:
                 return False
         except Exception:
-            # Agar bot kanalga admin qilinmagan bo'lsa yoki kanal topilmasa xato bermaslik uchun
             return False
     return True
 
-# Majburiy obuna tugmalari
+# Hamma 8 ta kanalni majburiy qilib chiqarish tugmalari
 def sub_menu_markup():
     markup = InlineKeyboardMarkup(row_width=1)
-    for channel in REQUIRED_CHANNELS:
+    # Avval 4 ta TG kanalni qo'shamiz
+    for channel in REQUIRED_TG_CHANNELS:
         markup.add(InlineKeyboardButton(text=f"➕ {channel[1]}", url=channel[2]))
+    # Keyin YT va IG kanallarni qo'shamiz
+    for channel in OTHER_CHANNELS:
+        markup.add(InlineKeyboardButton(text=f"➕ {channel[0]}", url=channel[1]))
+        
     markup.add(InlineKeyboardButton(text="✅ Tasdiqlash", callback_data="check_sub"))
     return markup
 
