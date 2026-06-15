@@ -37,6 +37,15 @@ bot = telebot.TeleBot(TOKEN)
 # GITHUB HAQIQIY HAVOLANGIZ (O'yin shu yerdan ochiladi)
 WEB_APP_URL = "https://sherbekcreator.github.io/loottap-bot/"
 
+# --- MAJBURIY OBUNA KANALLARI ---
+# Diqqat: Bot shu kanallarda Admin bo'lishi shart!
+REQUIRED_CHANNELS = [
+    ("@ibodmarket", "IBOD MARKET", "https://t.me/ibodmarket"),
+    ("@iboduc_service", "IBOD UC SERVICE", "https://t.me/iboduc_service"),
+    ("@ibod_tournament", "IBOD TOURNAMENT", "https://t.me/ibod_tournament"),
+    ("@etoSHEYXpubg", "SHEYX PUBG", "https://t.me/etoSHEYXpubg")
+]
+
 # --- 1. MA'LUMOTLAR BAZASI ---
 conn = sqlite3.connect('loottap.db', check_same_thread=False)
 cursor = conn.cursor()
@@ -88,6 +97,26 @@ def main_menu_markup(user_id):
     markup.add(InlineKeyboardButton(text="⚡️ > BOSHLASH <", web_app=webapp))
     return markup
 
+# Majburiy obunani tekshirish funksiyasi
+def check_all_subs(user_id):
+    for channel in REQUIRED_CHANNELS:
+        try:
+            member = bot.get_chat_member(channel[0], user_id)
+            if member.status not in ['member', 'administrator', 'creator']:
+                return False
+        except Exception:
+            # Agar bot kanalga admin qilinmagan bo'lsa yoki kanal topilmasa xato bermaslik uchun
+            return False
+    return True
+
+# Majburiy obuna tugmalari
+def sub_menu_markup():
+    markup = InlineKeyboardMarkup(row_width=1)
+    for channel in REQUIRED_CHANNELS:
+        markup.add(InlineKeyboardButton(text=f"➕ {channel[1]}", url=channel[2]))
+    markup.add(InlineKeyboardButton(text="✅ Tasdiqlash", callback_data="check_sub"))
+    return markup
+
 # --- 3. BAZAGA SAQLASH VA XARIDLAR ---
 @bot.message_handler(commands=['start'])
 def start_command(message):
@@ -96,6 +125,10 @@ def start_command(message):
     username = f"@{message.from_user.username}" if message.from_user.username else "Mavjud emas"
     text = message.text
 
+    # Yangi foydalanuvchini bazaga qo'shish (Majburiy obunadan qat'iy nazar saqlaymiz)
+    cursor.execute('INSERT OR IGNORE INTO users (user_id, first_name) VALUES (?, ?)', (user_id, first_name))
+    conn.commit()
+
     if len(text.split()) > 1:
         param = text.split()[1]
 
@@ -103,9 +136,12 @@ def start_command(message):
         if param.startswith('ref_'):
             try:
                 inviter_id = int(param.split('_')[1])
-                cursor.execute("SELECT user_id FROM users WHERE user_id = ?", (user_id,))
-                if not cursor.fetchone() and inviter_id != user_id:
-                    cursor.execute('INSERT INTO users (user_id, first_name) VALUES (?, ?)', (user_id, first_name))
+                # Do'stlar sonini faqat birinchi marta kirganda hisoblash
+                cursor.execute("SELECT score FROM users WHERE user_id = ?", (user_id,))
+                user_score = cursor.fetchone()
+                
+                # Agar u yangi foydalanuvchi bo'lsa va o'zini o'zi taklif qilmasa
+                if user_score and user_score[0] == 0 and inviter_id != user_id:
                     cursor.execute("UPDATE users SET referrals = referrals + 1 WHERE user_id = ?", (inviter_id,))
                     conn.commit()
                     update_rating_json()
@@ -113,7 +149,7 @@ def start_command(message):
             except Exception:
                 pass
 
-        # BARCHA MA'LUMOTLARNI SAQLASH
+        # BARCHA MA'LUMOTLARNI SAQLASH (WebApp dan kelganda)
         elif param.startswith('save_'):
             try:
                 parts = param.split('_')
@@ -125,7 +161,6 @@ def start_command(message):
                     new_reg = int(parts[5])
                     new_limit = int(parts[6])
 
-                    cursor.execute('INSERT OR IGNORE INTO users (user_id, first_name) VALUES (?, ?)', (user_id, first_name))
                     cursor.execute('''UPDATE users SET score=?, energy=?, upg_tap=?, upg_energy=?, upg_regen=?, daily_limit=? WHERE user_id=?''',
                                    (new_score, new_energy, new_tap, new_eng, new_reg, new_limit, user_id))
                     conn.commit()
@@ -144,7 +179,6 @@ def start_command(message):
                 game_id = parts[4] if len(parts) > 4 else "Noma'lum"
                 game_nick = parts[5] if len(parts) > 5 else "Noma'lum"
 
-                cursor.execute('INSERT OR IGNORE INTO users (user_id, first_name) VALUES (?, ?)', (user_id, first_name))
                 cursor.execute("UPDATE users SET score = ? WHERE user_id = ?", (new_score, user_id))
                 conn.commit()
                 update_rating_json()
@@ -202,22 +236,35 @@ def start_command(message):
                 pass
             return
 
-    # Oddiy start
-    cursor.execute('INSERT OR IGNORE INTO users (user_id, first_name) VALUES (?, ?)', (user_id, first_name))
-    conn.commit()
-    update_rating_json()
+    # START BOSILGANDA MAJBURIY OBUNANI TEKSHIRISH
+    if not check_all_subs(user_id):
+        bot.send_message(message.chat.id, "⛔️ **Botdan foydalanish uchun quyidagi homiy kanallarimizga obuna bo'lishingiz shart!**\n\nIltimos, barchasiga a'zo bo'lib, 'Tasdiqlash' tugmasini bosing:", reply_markup=sub_menu_markup(), parse_mode='Markdown')
+        return
 
     msg_text = (f"👋, {first_name}!\n"
-                f"🎮 PUBG UC va FF, MLBB Almaz ishlash endi juda oson!\n"
-                f"Bot orqali Loot to'plang va ularni UC yoki Almazga almashtiring 💎\n\n"
+                f"🎮 PUBG UC ishlash endi juda oson!\n"
+                f"Bot orqali Loot to'plang va ularni UC ga almashtiring 💎\n\n"
                 f"🔥 Qanday ishlaydi?\n"
                 f"• Botga kiring\n"
                 f"• Vazifalarni bajaring ✅\n"
                 f"• Loot to'plang 💰\n"
-                f"• UC va Almazga almashtiring 🎁\n\n"
+                f"• UC yutib oling 🎁\n\n"
                 f"⚡️ Tez | Oson | Ishonchli\n\n"
                 f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
     bot.send_message(message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
+
+# --- MAJBURIY OBUNANI TASDIQLASH TUGMASI ---
+@bot.callback_query_handler(func=lambda call: call.data == 'check_sub')
+def check_sub_callback(call):
+    user_id = call.from_user.id
+    first_name = call.from_user.first_name
+    if check_all_subs(user_id):
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+        msg_text = (f"🎉 **Obuna tasdiqlandi!**\n\n👋 Xush kelibsiz, {first_name}!\n"
+                    f"👇 Botni ishga tushirish uchun quyidagi tugmani bosing:")
+        bot.send_message(call.message.chat.id, msg_text, reply_markup=main_menu_markup(user_id), parse_mode='Markdown')
+    else:
+        bot.answer_callback_query(call.id, "❌ Barcha kanallarga a'zo bo'lmadingiz! Iltimos, tekshirib qaytadan bosing.", show_alert=True)
 
 # --- MAXFIY ADMIN KOMANDASI: O'yinchiga loot qo'shib berish ---
 @bot.message_handler(commands=['give'])
