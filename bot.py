@@ -16,12 +16,10 @@ def main():
 
 @app.route('/<path:path>')
 def serve_file(path):
-    # MUHIM YANGILIK: Agar fayl hali yo'q bo'lsa, uni darhol yaratamiz!
     if not os.path.exists(path):
         update_rating_json()
         
     response = make_response(send_from_directory('.', path))
-    # Barcha saytlarga, jumladan GitHub'ga reytingni olishga ruxsat beramiz!
     response.headers['Access-Control-Allow-Origin'] = '*' 
     return response
 
@@ -33,7 +31,6 @@ def keep_alive():
     server.start()
 
 # --- SOZLAMALAR ---
-# ⚠️ DIQQAT! SHU YERGA BOTFATHER'DAN OLGAN ENG YANGI TOKENINGIZNI QO'YING!
 TOKEN = '8610358967:AAHJJxe1deax8LdAwaV_8fAqfPpWwtkUB_0'
 bot = telebot.TeleBot(TOKEN)
 
@@ -54,7 +51,6 @@ cursor.execute('''
     )
 ''')
 
-# Eski bazani avtomatik yangilash
 try:
     cursor.execute("ALTER TABLE users ADD COLUMN upg_tap INTEGER DEFAULT 0")
     cursor.execute("ALTER TABLE users ADD COLUMN upg_energy INTEGER DEFAULT 0")
@@ -79,7 +75,6 @@ def update_rating_json():
         json.dump(top_refs, f)
 
 def main_menu_markup(user_id):
-    # MA'LUMOTLARNI BAZADAN OLISH VA WEB APPGA JO'NATISH
     cursor.execute("SELECT score, energy, upg_tap, upg_energy, upg_regen, daily_limit FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
     if row:
@@ -164,7 +159,7 @@ def start_command(message):
                 bot.send_message(message.chat.id, "❌ Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.")
             return
 
-        # DO'STLAR ORQALI XARID
+        # DO'STLAR ORQALI XARID (60 do'st = 60 UC qoidasi ishlaydi)
         elif param.startswith('refwithdraw_'):
             try:
                 parts = param.split('_')
@@ -213,8 +208,8 @@ def start_command(message):
     update_rating_json()
 
     msg_text = (f"👋, {first_name}!\n"
-                f"🎮 PUBG UC va FF, MLBB Almaz ishlash endi juda oson!\n"
-                f"Bot orqali Loot to'plang va ularni UC yoki Almazga almashtiring 💎\n\n"
+                f"🎮 PUBG UC ishlash endi juda oson!\n"
+                f"Bot orqali Loot to'plang va ularni UC ga almashtiring 💎\n\n"
                 f"🔥 Qanday ishlaydi?\n"
                 f"• Botga kiring\n"
                 f"• Vazifalarni bajaring ✅\n"
@@ -267,7 +262,6 @@ update_rating_json()
 print("💎 LootTap Bot serveri ishga tushdi! Baza muvaffaqiyatli ulandi...")
 keep_alive()
 
-# Eskirib qolgan yoki parazit ulanishlarni uzib tashlash uchun tozalash:
 try:
     bot.remove_webhook()
     time.sleep(1)
