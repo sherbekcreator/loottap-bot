@@ -31,7 +31,7 @@ def keep_alive():
     server.start()
 
 # --- SOZLAMALAR ---
-TOKEN = '8610358967:AAHJJxe1deax8LdAwaV_8fAqfPpWwtkUB_0'
+TOKEN = '8877117409:AAGfojWHm28yWeYIWwMDp7sb_WJ3p9mLcu8'
 bot = telebot.TeleBot(TOKEN)
 
 # GITHUB HAQIQIY HAVOLANGIZ (O'yin shu yerdan ochiladi)
@@ -159,7 +159,7 @@ def start_command(message):
                 bot.send_message(message.chat.id, "❌ Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.")
             return
 
-        # DO'STLAR ORQALI XARID (60 do'st = 60 UC qoidasi ishlaydi)
+        # DO'STLAR ORQALI XARID
         elif param.startswith('refwithdraw_'):
             try:
                 parts = param.split('_')
@@ -208,8 +208,8 @@ def start_command(message):
     update_rating_json()
 
     msg_text = (f"👋, {first_name}!\n"
-                f"🎮 PUBG UC ishlash endi juda oson!\n"
-                f"Bot orqali Loot to'plang va ularni UC ga almashtiring 💎\n\n"
+                f"🎮 PUBG UC va FF, MLBB Almaz ishlash endi juda oson!\n"
+                f"Bot orqali Loot to'plang va ularni UC yoki Almazga almashtiring 💎\n\n"
                 f"🔥 Qanday ishlaydi?\n"
                 f"• Botga kiring\n"
                 f"• Vazifalarni bajaring ✅\n"
