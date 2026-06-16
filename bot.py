@@ -37,6 +37,9 @@ bot = telebot.TeleBot(TOKEN)
 # GITHUB HAQIQIY HAVOLANGIZ (O'yin shu yerdan ochiladi)
 WEB_APP_URL = "https://sherbekcreator.github.io/loottap-bot/"
 
+# GITHUB'DAGI BANNER RASMINGIZ ULANDI
+START_IMAGE_URL = "https://sherbekcreator.github.io/loottap-bot/banner.jpg"
+
 # --- MAJBURIY OBUNA KANALLARI ---
 # 1. Telegram kanallar (Bot admin bo'lishi shart va bularni 100% qattiq tekshiradi)
 REQUIRED_TG_CHANNELS = [
@@ -46,12 +49,13 @@ REQUIRED_TG_CHANNELS = [
     ("@etoSHEYXpubg", "SHEYX PUBG", "https://t.me/etoSHEYXpubg")
 ]
 
-# 2. Boshqa tarmoqlar (Tugmasi chiqadi, odamlarni kirishga majbur qilamiz)
+# 2. Boshqa tarmoqlar (Tugmasi chiqadi, yangi Instagram kanal ham qo'shildi)
 OTHER_CHANNELS = [
-    ("SHEYX PUBG (YouTube)", "https://youtube.com/@etosheyxpubgm?si=7u6mMJ8I_8Eg896Q", "📺"),
-    ("IBOD MASHENNA (YouTube)", "https://youtube.com/@ibodmashkapubgm?si=EbTppdqyNQu2KBp9", "📺"),
-    ("IBOD TAP (YouTube)", "https://youtube.com/@ibodtap?si=c-X79pYo5t83xx_r", "📺"),
-    ("IBOD MASHENNA (Instagram)", "https://instagram.com/ibodmashennik?igsh=cms3dG11Zmt5cDhz", "📸")
+    ("SHEYX PUBG YT", "https://youtube.com/@etosheyxpubgm?si=7u6mMJ8I_8Eg896Q"),
+    ("IBOD MASHENNA YT", "https://youtube.com/@ibodmashkapubgm?si=EbTppdqyNQu2KBp9"),
+    ("IBOD TAP YT", "https://youtube.com/@ibodtap?si=c-X79pYo5t83xx_r"),
+    ("IBOD MASHENNA IG", "https://instagram.com/ibodmashennik?igsh=cms3dG11Zmt5cDhz"),
+    ("IBOD MARKET IG", "https://www.instagram.com/ibod_market?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==")
 ]
 
 # --- 1. MA'LUMOTLAR BAZASI ---
@@ -105,7 +109,6 @@ def main_menu_markup(user_id):
     markup.add(InlineKeyboardButton(text="⚡️ > BOSHLASH <", web_app=webapp))
     return markup
 
-# Majburiy obunani tekshirish funksiyasi
 def check_all_subs(user_id):
     for channel in REQUIRED_TG_CHANNELS:
         try:
@@ -116,27 +119,32 @@ def check_all_subs(user_id):
             return False
     return True
 
-# DINAMIK MAJBURIY OBUNA TUGMALARI (Qaysi biriga kirsa ✅ bo'ladi)
+# DINAMIK MAJBURIY OBUNA TUGMALARI (2 ustunli, yangi instagram bilan)
 def sub_menu_markup(user_id):
-    markup = InlineKeyboardMarkup(row_width=1)
+    markup = InlineKeyboardMarkup(row_width=2)
+    buttons = []
     
-    # 1. Telegram kanallar (Bot haqiqiy tekshiradi)
-    for channel in REQUIRED_TG_CHANNELS:
-        try:
-            member = bot.get_chat_member(channel[0], user_id)
-            if member.status in ['member', 'administrator', 'creator']:
-                btn_text = f"✅ {channel[1]}"
-            else:
-                btn_text = f"➕ {channel[1]}"
-        except Exception:
-            btn_text = f"➕ {channel[1]}"
-        markup.add(InlineKeyboardButton(text=btn_text, url=channel[2]))
+    all_channels = []
+    for ch in REQUIRED_TG_CHANNELS:
+        all_channels.append({'type': 'tg', 'id': ch[0], 'name': ch[1], 'url': ch[2]})
+    for ch in OTHER_CHANNELS:
+        all_channels.append({'type': 'other', 'name': ch[0], 'url': ch[1]})
         
-    # 2. YouTube va Instagram (Tekshirib bo'lmagani uchun ikonka bilan chiroyli chiqadi)
-    for channel in OTHER_CHANNELS:
-        markup.add(InlineKeyboardButton(text=f"{channel[2]} {channel[0]}", url=channel[1]))
+    for i, ch in enumerate(all_channels, 1):
+        btn_text = f"[{i}] {ch['name']}"
         
-    markup.add(InlineKeyboardButton(text="🔄 Tasdiqlash", callback_data="check_sub"))
+        if ch['type'] == 'tg':
+            try:
+                member = bot.get_chat_member(ch['id'], user_id)
+                if member.status in ['member', 'administrator', 'creator']:
+                    btn_text = f"✅ {ch['name']}"
+            except Exception:
+                pass
+                
+        buttons.append(InlineKeyboardButton(text=btn_text, url=ch['url']))
+        
+    markup.add(*buttons)
+    markup.add(InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_sub"))
     return markup
 
 # --- 3. BAZAGA SAQLASH VA XARIDLAR ---
@@ -168,7 +176,6 @@ def start_command(message):
             except Exception:
                 pass
 
-        # BARCHA MA'LUMOTLARNI SAQLASH
         elif param.startswith('save_'):
             try:
                 parts = param.split('_')
@@ -190,7 +197,6 @@ def start_command(message):
                 pass
             return
 
-        # LOOT ORQALI XARID
         elif param.startswith('withdraw_'):
             try:
                 parts = param.split('_')
@@ -212,7 +218,6 @@ def start_command(message):
                 bot.send_message(message.chat.id, "❌ Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.")
             return
 
-        # DO'STLAR ORQALI XARID
         elif param.startswith('refwithdraw_'):
             try:
                 parts = param.split('_')
@@ -255,11 +260,17 @@ def start_command(message):
                 pass
             return
 
-    # START BOSILGANDA MAJBURIY OBUNANI TEKSHIRISH
+    # START BOSILGANDA MAJBURIY OBUNANI TEKSHIRISH (RASM BILAN)
     if not check_all_subs(user_id):
-        bot.send_message(message.chat.id, "⛔️ **Botdan foydalanish uchun quyidagi homiy kanallarimizga obuna bo'lishingiz shart!**\n\nIltimos, barchasiga a'zo bo'lib, 'Tasdiqlash' tugmasini bosing:", reply_markup=sub_menu_markup(user_id), parse_mode='Markdown')
+        caption_text = "⚠️ Majburiy obuna talab qilinadi!\n\nDavom etish uchun kanallarga obuna bo'ling! 👇"
+        try:
+            bot.send_photo(message.chat.id, photo=START_IMAGE_URL, caption=caption_text, reply_markup=sub_menu_markup(user_id))
+        except Exception:
+            # Agar rasm xato bo'lsa, oddiy xabar boradi
+            bot.send_message(message.chat.id, caption_text, reply_markup=sub_menu_markup(user_id))
         return
 
+    # Muvaffaqiyatli asosiy start menyusi
     msg_text = (f"👋, {first_name}!\n"
                 f"🎮 PUBG UC ishlash endi juda oson!\n"
                 f"Bot orqali Loot to'plang va ularni UC ga almashtiring 💎\n\n"
@@ -272,23 +283,28 @@ def start_command(message):
                 f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
     bot.send_message(message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
 
-# --- MAJBURIY OBUNANI TASDIQLASH TUGMASI (Dinamik ✅ qo'yish) ---
+# --- MAJBURIY OBUNANI TEKSHIRISH TUGMASI (Dinamik ✅ qo'yish) ---
 @bot.callback_query_handler(func=lambda call: call.data == 'check_sub')
 def check_sub_callback(call):
     user_id = call.from_user.id
     first_name = call.from_user.first_name
     
     if check_all_subs(user_id):
-        bot.delete_message(call.message.chat.id, call.message.message_id)
-        msg_text = (f"🎉 **Obuna tasdiqlandi!**\n\n👋 Xush kelibsiz, {first_name}!\n"
+        try:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+        except Exception:
+            pass
+            
+        msg_text = (f"🎉 Obuna tasdiqlandi!\n\n"
+                    f"👋 Xush kelibsiz, {first_name}!\n"
                     f"👇 Botni ishga tushirish uchun quyidagi tugmani bosing:")
-        bot.send_message(call.message.chat.id, msg_text, reply_markup=main_menu_markup(user_id), parse_mode='Markdown')
+        bot.send_message(call.message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
     else:
         # Foydalanuvchi kirmagan bo'lsa, qaysilariga kirganini ✅ qilib yangilab beramiz
         try:
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=sub_menu_markup(user_id))
         except Exception:
-            pass # Agar tugmalarda o'zgarish bo'lmasa Telegram xato bermasligi uchun
+            pass 
             
         bot.answer_callback_query(call.id, "❌ Hali barcha kanallarga a'zo bo'lmadingiz! ➕ bo'lib turganlarga kiring.", show_alert=True)
 
@@ -313,7 +329,7 @@ def give_loot_admin(message):
             cursor.execute("UPDATE users SET score=? WHERE user_id=?", (new_score, target_id))
             conn.commit()
             update_rating_json()
-            bot.reply_to(message, f"✅ Muvaffaqiyatli!\n🆔 {target_id} egasiga {amount} loot qo'shildi.\n💎 Umumiy hisob: {new_score}")
+            bot.reply_to(message, f"✅ Muvaffaqiyatli!\n🆔 {target_id} egasiga {amount} loot qo'shildi.\n💎 Umumiy计 hisob: {new_score}")
         else:
             bot.reply_to(message, "❌ Foydalanuvchi bazadan topilmadi!")
 
