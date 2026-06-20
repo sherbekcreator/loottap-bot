@@ -274,14 +274,12 @@ def start_command(message):
             bot.send_message(message.chat.id, caption_text, reply_markup=sub_menu_markup(user_id))
         return
 
-    # Muvaffaqiyatli asosiy start menyusi (To'liq matn bilan)
     msg_text = get_welcome_text(first_name)
     try:
         bot.send_photo(message.chat.id, photo=START_IMAGE_URL, caption=msg_text, reply_markup=main_menu_markup(user_id))
     except Exception:
         bot.send_message(message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
 
-# --- MAJBURIY OBUNANI TEKSHIRISH TUGMASI (Dinamik ✅ qo'yish) ---
 @bot.callback_query_handler(func=lambda call: call.data == 'check_sub')
 def check_sub_callback(call):
     user_id = call.from_user.id
@@ -293,7 +291,6 @@ def check_sub_callback(call):
         except Exception:
             pass
             
-        # TASDIQLAGANDAN SO'NG HAM TO'LIQ MATN VA RASM BILAN CHIQADI
         msg_text = f"🎉 Obuna tasdiqlandi!\n\n" + get_welcome_text(first_name)
         try:
             bot.send_photo(call.message.chat.id, photo=START_IMAGE_URL, caption=msg_text, reply_markup=main_menu_markup(user_id))
@@ -307,28 +304,42 @@ def check_sub_callback(call):
             
         bot.answer_callback_query(call.id, "❌ Hali barcha kanallarga a'zo bo'lmadingiz! ➕ bo'lib turganlarga kiring.", show_alert=True)
 
-# --- IBOD AKA UCHUN MAXSUS STATISTIKA BUYRUG'I ---
+# --- IBOD AKA UCHUN MAXSUS STATISTIKA VA RASSILKA BUYRUG'I ---
 @bot.message_handler(commands=['ibod'])
 def ibod_stats(message):
-    if message.from_user.id in ADMIN_IDS:
-        cursor.execute("SELECT COUNT(user_id) FROM users")
-        total_users = cursor.fetchone()[0]
-        
-        bot.reply_to(message, f"📊 **IBOD TAP STATISTIKASI:**\n\n👥 Botdagi jami o'yinchilar: **{total_users}** ta.\n🔥 Biz to'xtamayapmiz, olg'a!")
-    else:
-        bot.reply_to(message, "❌ Sizda bu buyruqni ishlatish huquqi yo'q.")
+    if message.from_user.id not in ADMIN_IDS:
+        return # Oddiy odamga umuman javob qaytarmaydi (jim turadi)
+
+    # Nechta referal qo'shganini aniqlash
+    cursor.execute("SELECT referrals FROM users WHERE user_id = ?", (message.from_user.id,))
+    ref_data = cursor.fetchone()
+    my_refs = ref_data[0] if ref_data else 0
+
+    # Jami odamlarni aniqlash
+    cursor.execute("SELECT COUNT(user_id) FROM users")
+    total_users = cursor.fetchone()[0]
+
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📨 Hammaga xabar yuborish", callback_data="admin_broadcast"))
+
+    msg_text = (f"📊 **IBOD TAP MAXSUS STATISTIKASI:**\n\n"
+                f"👥 Sizning referallaringiz: **{my_refs}** ta\n"
+                f"📈 Jami bot foydalanuvchilari: **{total_users}** ta\n\n"
+                f"👇 Pastdagi tugma orqali botdagi barchaga xabar tarqata olasiz:")
+                
+    bot.send_message(message.chat.id, msg_text, reply_markup=markup, parse_mode="Markdown")
 
 # --- HAQIQIY ADMIN PANEL (SHERBEK UCHUN) ---
 @bot.message_handler(commands=['admin'])
 def admin_panel(message):
-    if message.from_user.id in ADMIN_IDS:
-        markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("📊 Statistika", callback_data="admin_stats"))
-        markup.add(InlineKeyboardButton("📨 Hammaga xabar yuborish", callback_data="admin_broadcast"))
-        
-        bot.send_message(message.chat.id, "🛡 **Admin Panelga xush kelibsiz!**\nQuyidagi menyudan kerakli bo'limni tanlang:", reply_markup=markup)
-    else:
-        bot.reply_to(message, "❌ Siz admin emassiz!")
+    if message.from_user.id not in ADMIN_IDS:
+        return # Boshqa birov bossa jim turadi
+
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📊 Statistika", callback_data="admin_stats"))
+    markup.add(InlineKeyboardButton("📨 Hammaga xabar yuborish", callback_data="admin_broadcast"))
+    
+    bot.send_message(message.chat.id, "🛡 **Admin Panelga xush kelibsiz!**\nQuyidagi menyudan kerakli bo'limni tanlang:", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('admin_'))
 def admin_callbacks(call):
@@ -373,7 +384,7 @@ def process_broadcast(message):
 @bot.message_handler(commands=['give'])
 def give_loot_admin(message):
     if message.from_user.id not in ADMIN_IDS:
-        return 
+        return # Jim turadi
 
     try:
         args = message.text.split()
