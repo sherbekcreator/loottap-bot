@@ -34,28 +34,29 @@ def keep_alive():
 TOKEN = '8877117409:AAGfojWHm28yWeYIWwMDp7sb_WJ3p9mLcu8'
 bot = telebot.TeleBot(TOKEN)
 
-# GITHUB HAQIQIY HAVOLANGIZ (O'yin shu yerdan ochiladi)
 WEB_APP_URL = "https://sherbekcreator.github.io/loottap-bot/"
+START_IMAGE_URL = "https://raw.githubusercontent.com/sherbekcreator/loottap-bot/main/banner.jpg"
 
-# GITHUB'DAGI BANNER RASMINGIZ ULANDI
-START_IMAGE_URL = "https://sherbekcreator.github.io/loottap-bot/banner.jpg"
+# ⚠️ ADMINLAR RO'YXATI (Sizning va Ibod akaning ID raqamlari)
+ADMIN_IDS = [8361233416, 942670016] 
 
 # --- MAJBURIY OBUNA KANALLARI ---
-# 1. Telegram kanallar (Bot admin bo'lishi shart va bularni 100% qattiq tekshiradi)
+# 1. Telegram kanallar (Bot bularning barchasida ADMIN bo'lishi shart!)
 REQUIRED_TG_CHANNELS = [
-    ("@ibodmarket", "IBOD MARKET", "https://t.me/ibodmarket"),
-    ("@iboduc_service", "IBOD UC SERVICE", "https://t.me/iboduc_service"),
-    ("@ibod_tournament", "IBOD TOURNAMENT", "https://t.me/ibod_tournament"),
-    ("@etoSHEYXpubg", "SHEYX PUBG", "https://t.me/etoSHEYXpubg")
+    ("@ibodmarket", "IBOD MARKET TG", "https://t.me/ibodmarket"),
+    ("@iboduc_service", "IBOD UC SERVICE TG", "https://t.me/iboduc_service"),
+    ("@ibod_tournament", "IBOD TOURNAMENT TG", "https://t.me/ibod_tournament"),
+    ("@etoSHEYXpubg", "SHEYX PUBG TG", "https://t.me/etoSHEYXpubg"),
+    ("@ibodmashka_pubg", "IBOD MASHKA TG", "https://t.me/ibodmashka_pubg")
 ]
 
-# 2. Boshqa tarmoqlar (Tugmasi chiqadi, yangi Instagram kanal ham qo'shildi)
+# 2. Boshqa tarmoqlar (YouTube = YT, Instagram = INS)
 OTHER_CHANNELS = [
     ("SHEYX PUBG YT", "https://youtube.com/@etosheyxpubgm?si=7u6mMJ8I_8Eg896Q"),
     ("IBOD MASHENNA YT", "https://youtube.com/@ibodmashkapubgm?si=EbTppdqyNQu2KBp9"),
     ("IBOD TAP YT", "https://youtube.com/@ibodtap?si=c-X79pYo5t83xx_r"),
-    ("IBOD MASHENNA IG", "https://instagram.com/ibodmashennik?igsh=cms3dG11Zmt5cDhz"),
-    ("IBOD MARKET IG", "https://www.instagram.com/ibod_market?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==")
+    ("IBOD MASHENNA INS", "https://www.instagram.com/ibodmashennik"),
+    ("IBOD MARKET INS", "https://www.instagram.com/ibod_market")
 ]
 
 # --- 1. MA'LUMOTLAR BAZASI ---
@@ -119,7 +120,6 @@ def check_all_subs(user_id):
             return False
     return True
 
-# DINAMIK MAJBURIY OBUNA TUGMALARI (2 ustunli, yangi instagram bilan)
 def sub_menu_markup(user_id):
     markup = InlineKeyboardMarkup(row_width=2)
     buttons = []
@@ -132,7 +132,6 @@ def sub_menu_markup(user_id):
         
     for i, ch in enumerate(all_channels, 1):
         btn_text = f"[{i}] {ch['name']}"
-        
         if ch['type'] == 'tg':
             try:
                 member = bot.get_chat_member(ch['id'], user_id)
@@ -140,7 +139,6 @@ def sub_menu_markup(user_id):
                     btn_text = f"✅ {ch['name']}"
             except Exception:
                 pass
-                
         buttons.append(InlineKeyboardButton(text=btn_text, url=ch['url']))
         
     markup.add(*buttons)
@@ -161,7 +159,6 @@ def start_command(message):
     if len(text.split()) > 1:
         param = text.split()[1]
 
-        # REFERRAL
         if param.startswith('ref_'):
             try:
                 inviter_id = int(param.split('_')[1])
@@ -208,9 +205,8 @@ def start_command(message):
                 conn.commit()
                 update_rating_json()
 
-                admin_id = 8361233416
                 admin_msg = (f"🔔 **Yangi LOOT xarid so'rovi!**\n\n👤 O'yinchi: {first_name} ({username})\n🆔 Telegram ID: `{user_id}`\n\n🛒 Xarid turi: **{w_type}**\n🎮 O'yin ID: `{game_id}`\n🥷 O'yin NIK: {game_nick}\n\n💰 Sarflandi: {price} loot\n💎 Qoldiq: {new_score} loot\n\n⚠️ Admin, 24 soat ichida bajarilsin!")
-                bot.send_message(admin_id, admin_msg, parse_mode='Markdown')
+                bot.send_message(ADMIN_IDS[0], admin_msg, parse_mode='Markdown')
 
                 msg = (f"🎉 So'rovingiz qabul qilindi!\n\n💳 Xarid: {w_type}\n🎮 O'yin ID: {game_id}\n💰 Sarflandi: {price} loot\n\n✅ 24 soat ichida hisobingizga tushadi!\n🙏 O'yinimizni tanlaganingiz uchun rahmat, omad!")
                 bot.send_message(message.chat.id, msg, reply_markup=main_menu_markup(user_id))
@@ -248,9 +244,8 @@ def start_command(message):
                     conn.commit()
                     update_rating_json()
 
-                    admin_id = 8361233416
                     admin_msg = (f"🤝 **Yangi DO'STLAR orqali xarid so'rovi!**\n\n👤 O'yinchi: {first_name} ({username})\n🆔 Telegram ID: `{user_id}`\n\n🎁 Sovg'a: **{w_type}**\n👥 Sarflandi: {req_friends} ta do'st\n🎮 O'yin ID: `{game_id}`\n🥷 O'yin NIK: {game_nick}\n\n⚠️ Admin, 24 soat ichida bajarilsin!")
-                    bot.send_message(admin_id, admin_msg, parse_mode='Markdown')
+                    bot.send_message(ADMIN_IDS[0], admin_msg, parse_mode='Markdown')
 
                     msg = (f"🎉 Qo'shgan do'stlaringiz uchun so'rov qabul qilindi!\n\n🎁 Yutuq: {w_type}\n👥 Sarflandi: {req_friends} ta do'st\n\n✅ 24 soat ichida hisobingizga tushadi!\n🙏 O'yinimizni tanlaganingiz uchun rahmat, omad!")
                     bot.send_message(message.chat.id, msg, reply_markup=main_menu_markup(user_id))
@@ -266,11 +261,10 @@ def start_command(message):
         try:
             bot.send_photo(message.chat.id, photo=START_IMAGE_URL, caption=caption_text, reply_markup=sub_menu_markup(user_id))
         except Exception:
-            # Agar rasm xato bo'lsa, oddiy xabar boradi
             bot.send_message(message.chat.id, caption_text, reply_markup=sub_menu_markup(user_id))
         return
 
-    # Muvaffaqiyatli asosiy start menyusi
+    # Agar allaqachon a'zo bo'lgan bo'lsa (Muvaffaqiyatli asosiy start menyusi - BU YERDA HAM RASM CHIQADI)
     msg_text = (f"👋, {first_name}!\n"
                 f"🎮 PUBG UC ishlash endi juda oson!\n"
                 f"Bot orqali Loot to'plang va ularni UC ga almashtiring 💎\n\n"
@@ -281,7 +275,10 @@ def start_command(message):
                 f"• UC yutib oling 🎁\n\n"
                 f"⚡️ Tez | Oson | Ishonchli\n\n"
                 f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
-    bot.send_message(message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
+    try:
+        bot.send_photo(message.chat.id, photo=START_IMAGE_URL, caption=msg_text, reply_markup=main_menu_markup(user_id))
+    except Exception:
+        bot.send_message(message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
 
 # --- MAJBURIY OBUNANI TEKSHIRISH TUGMASI (Dinamik ✅ qo'yish) ---
 @bot.callback_query_handler(func=lambda call: call.data == 'check_sub')
@@ -295,12 +292,15 @@ def check_sub_callback(call):
         except Exception:
             pass
             
+        # TASDIQLAGANDAN SO'NG HAM RASM BILAN CHIQADI
         msg_text = (f"🎉 Obuna tasdiqlandi!\n\n"
                     f"👋 Xush kelibsiz, {first_name}!\n"
                     f"👇 Botni ishga tushirish uchun quyidagi tugmani bosing:")
-        bot.send_message(call.message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
+        try:
+            bot.send_photo(call.message.chat.id, photo=START_IMAGE_URL, caption=msg_text, reply_markup=main_menu_markup(user_id))
+        except Exception:
+            bot.send_message(call.message.chat.id, msg_text, reply_markup=main_menu_markup(user_id))
     else:
-        # Foydalanuvchi kirmagan bo'lsa, qaysilariga kirganini ✅ qilib yangilab beramiz
         try:
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=sub_menu_markup(user_id))
         except Exception:
@@ -308,12 +308,72 @@ def check_sub_callback(call):
             
         bot.answer_callback_query(call.id, "❌ Hali barcha kanallarga a'zo bo'lmadingiz! ➕ bo'lib turganlarga kiring.", show_alert=True)
 
-# --- MAXFIY ADMIN KOMANDASI: O'yinchiga loot qo'shib berish ---
+# --- IBOD AKA UCHUN MAXSUS STATISTIKA BUYRUG'I ---
+@bot.message_handler(commands=['ibod'])
+def ibod_stats(message):
+    if message.from_user.id in ADMIN_IDS:
+        cursor.execute("SELECT COUNT(user_id) FROM users")
+        total_users = cursor.fetchone()[0]
+        
+        bot.reply_to(message, f"📊 **IBOD TAP STATISTIKASI:**\n\n👥 Botdagi jami o'yinchilar: **{total_users}** ta.\n🔥 Biz to'xtamayapmiz, olg'a!")
+    else:
+        bot.reply_to(message, "❌ Sizda bu buyruqni ishlatish huquqi yo'q.")
+
+# --- HAQIQIY ADMIN PANEL (SHERBEK UCHUN) ---
+@bot.message_handler(commands=['admin'])
+def admin_panel(message):
+    if message.from_user.id in ADMIN_IDS:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("📊 Statistika", callback_data="admin_stats"))
+        markup.add(InlineKeyboardButton("📨 Hammaga xabar yuborish", callback_data="admin_broadcast"))
+        
+        bot.send_message(message.chat.id, "🛡 **Admin Panelga xush kelibsiz!**\nQuyidagi menyudan kerakli bo'limni tanlang:", reply_markup=markup)
+    else:
+        bot.reply_to(message, "❌ Siz admin emassiz!")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('admin_'))
+def admin_callbacks(call):
+    if call.from_user.id not in ADMIN_IDS:
+        return
+        
+    if call.data == "admin_stats":
+        cursor.execute("SELECT COUNT(user_id) FROM users")
+        total_users = cursor.fetchone()[0]
+        bot.answer_callback_query(call.id)
+        bot.send_message(call.message.chat.id, f"📊 **Umumiy Statistika:**\n👥 Botdagi foydalanuvchilar: {total_users} ta")
+        
+    elif call.data == "admin_broadcast":
+        bot.answer_callback_query(call.id)
+        msg = bot.send_message(call.message.chat.id, "📨 Yubormoqchi bo'lgan xabaringizni yozing (rasmli yoki matnli bo'lishi mumkin).\n\nBekor qilish uchun /cancel yozing.")
+        bot.register_next_step_handler(msg, process_broadcast)
+
+def process_broadcast(message):
+    if message.text == '/cancel':
+        bot.send_message(message.chat.id, "❌ Rassilka bekor qilindi.")
+        return
+        
+    bot.send_message(message.chat.id, "⏳ Xabar yuborilmoqda, kuting...")
+    
+    cursor.execute("SELECT user_id FROM users")
+    users = cursor.fetchall()
+    
+    success = 0
+    fail = 0
+    
+    for user in users:
+        try:
+            bot.copy_message(user[0], message.chat.id, message.message_id)
+            success += 1
+            time.sleep(0.05)
+        except Exception:
+            fail += 1
+            
+    bot.send_message(message.chat.id, f"✅ **Rassilka yakunlandi!**\n\n🟢 Yetib bordi: {success} ta\n🔴 Bloklaganlar: {fail} ta")
+
+# --- MAXFIY ADMIN KOMANDASI (Qo'lda boshqarish) ---
 @bot.message_handler(commands=['give'])
 def give_loot_admin(message):
-    ADMIN_ID = 8361233416
-
-    if message.from_user.id != ADMIN_ID:
+    if message.from_user.id not in ADMIN_IDS:
         return 
 
     try:
@@ -329,17 +389,16 @@ def give_loot_admin(message):
             cursor.execute("UPDATE users SET score=? WHERE user_id=?", (new_score, target_id))
             conn.commit()
             update_rating_json()
-            bot.reply_to(message, f"✅ Muvaffaqiyatli!\n🆔 {target_id} egasiga {amount} loot qo'shildi.\n💎 Umumiy计 hisob: {new_score}")
+            bot.reply_to(message, f"✅ Muvaffaqiyatli!\n🆔 {target_id} egasiga {amount} loot qo'shildi.\n💎 Umumiy hisob: {new_score}")
         else:
             bot.reply_to(message, "❌ Foydalanuvchi bazadan topilmadi!")
 
     except Exception as e:
         bot.reply_to(message, "⚠️ Xato format!\nTo'g'ri usul: /give ID MIQDOR\nMasalan: /give 123456789 59000000")
 
-# --- FAQAT DO'STLARNI TOZALASH ---
 @bot.message_handler(commands=['clear_refs'])
 def clear_refs(message):
-    if message.from_user.id == 8361233416:
+    if message.from_user.id in ADMIN_IDS:
         cursor.execute("UPDATE users SET referrals = 0")
         conn.commit()
         update_rating_json()
