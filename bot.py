@@ -41,7 +41,6 @@ START_IMAGE_URL = "https://raw.githubusercontent.com/sherbekcreator/loottap-bot/
 ADMIN_IDS = [8361233416, 942670016] 
 
 # --- MAJBURIY OBUNA KANALLARI ---
-# 1. Telegram kanallar (Bot bularning barchasida ADMIN bo'lishi shart!)
 REQUIRED_TG_CHANNELS = [
     ("@ibodmarket", "IBOD MARKET TG", "https://t.me/ibodmarket"),
     ("@iboduc_service", "IBOD UC SERVICE TG", "https://t.me/iboduc_service"),
@@ -50,7 +49,6 @@ REQUIRED_TG_CHANNELS = [
     ("@ibodmashka_pubg", "IBOD MASHKA TG", "https://t.me/ibodmashka_pubg")
 ]
 
-# 2. Boshqa tarmoqlar (YouTube = YT, Instagram = INS)
 OTHER_CHANNELS = [
     ("SHEYX PUBG YT", "https://youtube.com/@etosheyxpubgm?si=7u6mMJ8I_8Eg896Q"),
     ("IBOD MASHENNA YT", "https://youtube.com/@ibodmashkapubgm?si=EbTppdqyNQu2KBp9"),
@@ -145,6 +143,19 @@ def sub_menu_markup(user_id):
     markup.add(InlineKeyboardButton(text="✅ Tekshirish", callback_data="check_sub"))
     return markup
 
+# --- UMUMIY XUSH KELIBSIZ MATNI ---
+def get_welcome_text(first_name):
+    return (f"👋 Xush kelibsiz, {first_name}!\n"
+            f"🎮 PUBG UC ishlash endi juda oson!\n"
+            f"Bot orqali Loot to'plang va ularni UC ga almashtiring 💎\n\n"
+            f"🔥 Qanday ishlaydi?\n"
+            f"• Botga kiring\n"
+            f"• Vazifalarni bajaring ✅\n"
+            f"• Loot to'plang 💰\n"
+            f"• UC yutib oling 🎁\n\n"
+            f"⚡️ Tez | Oson | Ishonchli\n\n"
+            f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
+
 # --- 3. BAZAGA SAQLASH VA XARIDLAR ---
 @bot.message_handler(commands=['start'])
 def start_command(message):
@@ -169,7 +180,7 @@ def start_command(message):
                     cursor.execute("UPDATE users SET referrals = referrals + 1 WHERE user_id = ?", (inviter_id,))
                     conn.commit()
                     update_rating_json()
-                    bot.send_message(inviter_id, f"🎉 Tabriklaymiz! Sizning taklifingiz bilan **{first_name}** botga qo'shildi!")
+                    bot.send_message(inviter_id, f"🎉 Tabriklaymiz! Sizning taklifingiz bilan {first_name} botga qo'shildi!")
             except Exception:
                 pass
 
@@ -255,7 +266,6 @@ def start_command(message):
                 pass
             return
 
-    # START BOSILGANDA MAJBURIY OBUNANI TEKSHIRISH (RASM BILAN)
     if not check_all_subs(user_id):
         caption_text = "⚠️ Majburiy obuna talab qilinadi!\n\nDavom etish uchun kanallarga obuna bo'ling! 👇"
         try:
@@ -264,17 +274,8 @@ def start_command(message):
             bot.send_message(message.chat.id, caption_text, reply_markup=sub_menu_markup(user_id))
         return
 
-    # Agar allaqachon a'zo bo'lgan bo'lsa (Muvaffaqiyatli asosiy start menyusi - BU YERDA HAM RASM CHIQADI)
-    msg_text = (f"👋, {first_name}!\n"
-                f"🎮 PUBG UC ishlash endi juda oson!\n"
-                f"Bot orqali Loot to'plang va ularni UC ga almashtiring 💎\n\n"
-                f"🔥 Qanday ishlaydi?\n"
-                f"• Botga kiring\n"
-                f"• Vazifalarni bajaring ✅\n"
-                f"• Loot to'plang 💰\n"
-                f"• UC yutib oling 🎁\n\n"
-                f"⚡️ Tez | Oson | Ishonchli\n\n"
-                f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
+    # Muvaffaqiyatli asosiy start menyusi (To'liq matn bilan)
+    msg_text = get_welcome_text(first_name)
     try:
         bot.send_photo(message.chat.id, photo=START_IMAGE_URL, caption=msg_text, reply_markup=main_menu_markup(user_id))
     except Exception:
@@ -292,10 +293,8 @@ def check_sub_callback(call):
         except Exception:
             pass
             
-        # TASDIQLAGANDAN SO'NG HAM RASM BILAN CHIQADI
-        msg_text = (f"🎉 Obuna tasdiqlandi!\n\n"
-                    f"👋 Xush kelibsiz, {first_name}!\n"
-                    f"👇 Botni ishga tushirish uchun quyidagi tugmani bosing:")
+        # TASDIQLAGANDAN SO'NG HAM TO'LIQ MATN VA RASM BILAN CHIQADI
+        msg_text = f"🎉 Obuna tasdiqlandi!\n\n" + get_welcome_text(first_name)
         try:
             bot.send_photo(call.message.chat.id, photo=START_IMAGE_URL, caption=msg_text, reply_markup=main_menu_markup(user_id))
         except Exception:
