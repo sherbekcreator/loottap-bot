@@ -67,7 +67,17 @@ cursor.execute('''
         score INTEGER DEFAULT 0,
         energy INTEGER DEFAULT 1000,
         referrals INTEGER DEFAULT 0,
-        unlocked_ref INTEGER DEFAULT 0
+        unlocked_ref INTEGER DEFAULT 0,
+        is_banned INTEGER DEFAULT 0
+    )
+''')
+
+# --- ANTI-NAKRUTKA UCHUN MAXSUS JADVAL ---
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS used_accounts (
+        user_id INTEGER,
+        game_id TEXT,
+        game_nick TEXT
     )
 ''')
 
@@ -76,7 +86,7 @@ try:
     cursor.execute("ALTER TABLE users ADD COLUMN upg_energy INTEGER DEFAULT 0")
     cursor.execute("ALTER TABLE users ADD COLUMN upg_regen INTEGER DEFAULT 0")
     cursor.execute("ALTER TABLE users ADD COLUMN daily_limit INTEGER DEFAULT 15000")
-    conn.commit()
+    cursor.execute("ALTER TABLE users ADD COLUMN is_banned INTEGER DEFAULT 0")
 except Exception:
     pass 
 
@@ -84,26 +94,27 @@ conn.commit()
 
 # --- 2. REYTINGLARNI JSON FAYLGA YOZISH ---
 def update_rating_json():
-    cursor.execute("SELECT first_name, score FROM users ORDER BY score DESC LIMIT 100")
+    cursor.execute("SELECT first_name, score FROM users WHERE is_banned = 0 ORDER BY score DESC LIMIT 100")
     top_users = [{"username": row[0] if row[0] else "Unknown", "loot": row[1]} for row in cursor.fetchall()]
     with open("rating.json", "w", encoding="utf-8") as f:
         json.dump(top_users, f)
 
-    cursor.execute("SELECT first_name, referrals FROM users WHERE referrals > 0 ORDER BY referrals DESC LIMIT 100")
+    cursor.execute("SELECT first_name, referrals FROM users WHERE referrals > 0 AND is_banned = 0 ORDER BY referrals DESC LIMIT 100")
     top_refs = [{"username": row[0] if row[0] else "Unknown", "refs": row[1]} for row in cursor.fetchall()]
     with open("ref_rating.json", "w", encoding="utf-8") as f:
         json.dump(top_refs, f)
 
 def main_menu_markup(user_id):
-    cursor.execute("SELECT score, energy, upg_tap, upg_energy, upg_regen, daily_limit FROM users WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT score, energy, upg_tap, upg_energy, upg_regen, daily_limit, referrals FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
     if row:
-        score, energy, upg_tap, upg_energy, upg_regen, daily_limit = row
+        score, energy, upg_tap, upg_energy, upg_regen, daily_limit, refs = row
     else:
-        score, energy, upg_tap, upg_energy, upg_regen, daily_limit = (0, 1000, 0, 0, 0, 15000)
+        score, energy, upg_tap, upg_energy, upg_regen, daily_limit, refs = (0, 1000, 0, 0, 0, 15000, 0)
 
     markup = InlineKeyboardMarkup()
-    full_url = f"{WEB_APP_URL}?userid={user_id}&score={score}&energy={energy}&tap={upg_tap}&eng={upg_energy}&reg={upg_regen}&limit={daily_limit}"
+    # WebApp URL ga endi 'refs' xususiyati ham uzatiladi!
+    full_url = f"{WEB_APP_URL}?userid={user_id}&score={score}&energy={energy}&tap={upg_tap}&eng={upg_energy}&reg={upg_regen}&limit={daily_limit}&refs={refs}"
     webapp = WebAppInfo(url=full_url)
     markup.add(InlineKeyboardButton(text="⚡️ > BOSHLASH <", web_app=webapp))
     return markup
@@ -156,7 +167,7 @@ def get_welcome_text(first_name):
             f"⚡️ Tez | Oson | Ishonchli\n\n"
             f"🎯 Do'stlaringizni taklif qiling va yanada ko'proq loot yig'ing!")
 
-# --- 3. BAZAGA SAQLASH VA XARIDLAR ---
+# --- BAZAGA SAQLASH VA XARIDLAR ---
 @bot.message_handler(commands=['start'])
 def start_command(message):
     user_id = message.from_user.id
@@ -166,6 +177,13 @@ def start_command(message):
 
     cursor.execute('INSERT OR IGNORE INTO users (user_id, first_name) VALUES (?, ?)', (user_id, first_name))
     conn.commit()
+
+    # --- BAN TEKSHIRUVI ---
+    cursor.execute('SELECT is_banned FROM users WHERE user_id = ?', (user_id,))
+    user_status = cursor.fetchone()
+    if user_status and user_status[0] == 1:
+        bot.send_message(message.chat.id, "🚫 **XAVFSIZLIK TIZIMI:**\n\nSiz firibgarlik sababli botdan umrbod **bloklangansiz!**", parse_mode='Markdown')
+        return
 
     if len(text.split()) > 1:
         param = text.split()[1]
@@ -194,9 +212,18 @@ def start_command(message):
                     new_eng = int(parts[4])
                     new_reg = int(parts[5])
                     new_limit = int(parts[6])
+                    
+                    # Agar html fayl yangilangan va 8-parametr uzatgan bo'lsa
+                    webapp_refs = int(parts[7]) if len(parts) >= 8 else 0
 
-                    cursor.execute('''UPDATE users SET score=?, energy=?, upg_tap=?, upg_energy=?, upg_regen=?, daily_limit=? WHERE user_id=?''',
-                                   (new_score, new_energy, new_tap, new_eng, new_reg, new_limit, user_id))
+                    cursor.execute("SELECT referrals FROM users WHERE user_id = ?", (user_id,))
+                    db_refs_row = cursor.fetchone()
+                    db_refs = db_refs_row[0] if db_refs_row else 0
+                    
+                    final_refs = max(webapp_refs, db_refs) # Kattasini oladi!
+
+                    cursor.execute('''UPDATE users SET score=?, energy=?, upg_tap=?, upg_energy=?, upg_regen=?, daily_limit=?, referrals=? WHERE user_id=?''',
+                                   (new_score, new_energy, new_tap, new_eng, new_reg, new_limit, final_refs, user_id))
                     conn.commit()
                     update_rating_json()
 
@@ -211,6 +238,22 @@ def start_command(message):
                 w_type, price, new_score = parts[1].upper(), int(parts[2]), int(parts[3])
                 game_id = parts[4] if len(parts) > 4 else "Noma'lum"
                 game_nick = parts[5] if len(parts) > 5 else "Noma'lum"
+
+                # --- ANTI-NAKRUTKA TIZIMI 🛡 ---
+                cursor.execute("SELECT user_id FROM used_accounts WHERE (game_id = ? OR game_nick = ?) AND user_id != ?", (game_id, game_nick, user_id))
+                cheater = cursor.fetchone()
+                
+                if cheater:
+                    # Firibgarni avtomatik bloklaymiz
+                    cursor.execute("UPDATE users SET is_banned = 1 WHERE user_id = ?", (user_id,))
+                    conn.commit()
+                    bot.send_message(user_id, "🚫 **XAVFSIZLIK TIZIMI (ANTI-NAKRUTKA):**\n\nSiz boshqa foydalanuvchiga tegishli O'yin ID yoki NIK dan foydalanganingiz uchun avtomatik **BLOKLANDINGIZ**!")
+                    bot.send_message(ADMIN_IDS[0], f"🚨 **ANTI-NAKRUTKA ISHLADI!**\nFiribgar bloklandi: `{user_id}`\nO'yin ID: `{game_id}`\nO'yin NIK: {game_nick}")
+                    return
+                else:
+                    # Toza bo'lsa, xotiraga qo'shib qo'yamiz (boshqa birov o'g'irlamasligi uchun)
+                    cursor.execute("INSERT INTO used_accounts (user_id, game_id, game_nick) VALUES (?, ?, ?)", (user_id, game_id, game_nick))
+                    conn.commit()
 
                 cursor.execute("UPDATE users SET score = ? WHERE user_id = ?", (new_score, user_id))
                 conn.commit()
@@ -251,6 +294,19 @@ def start_command(message):
                         bot.send_message(message.chat.id, f"❌ **Xatolik!**\nSizda yetarli do'stlar yo'q!\nKerak: {req_friends} ta. Sizda: {refs} ta.", reply_markup=main_menu_markup(user_id))
                         return
 
+                    # --- ANTI-NAKRUTKA TIZIMI 🛡 ---
+                    cursor.execute("SELECT user_id FROM used_accounts WHERE (game_id = ? OR game_nick = ?) AND user_id != ?", (game_id, game_nick, user_id))
+                    cheater = cursor.fetchone()
+                    
+                    if cheater:
+                        cursor.execute("UPDATE users SET is_banned = 1 WHERE user_id = ?", (user_id,))
+                        conn.commit()
+                        bot.send_message(user_id, "🚫 **XAVFSIZLIK TIZIMI (ANTI-NAKRUTKA):**\n\nSiz boshqa foydalanuvchiga tegishli O'yin ID yoki NIK dan foydalanganingiz uchun avtomatik **BLOKLANDINGIZ**!")
+                        bot.send_message(ADMIN_IDS[0], f"🚨 **ANTI-NAKRUTKA ISHLADI!**\nFiribgar bloklandi: `{user_id}`\nO'yin ID: `{game_id}`\nO'yin NIK: {game_nick}")
+                        return
+                    else:
+                        cursor.execute("INSERT INTO used_accounts (user_id, game_id, game_nick) VALUES (?, ?, ?)", (user_id, game_id, game_nick))
+
                     cursor.execute("UPDATE users SET referrals = referrals - ? WHERE user_id = ?", (req_friends, user_id))
                     conn.commit()
                     update_rating_json()
@@ -284,6 +340,12 @@ def start_command(message):
 def check_sub_callback(call):
     user_id = call.from_user.id
     first_name = call.from_user.first_name
+
+    cursor.execute('SELECT is_banned FROM users WHERE user_id = ?', (user_id,))
+    user_status = cursor.fetchone()
+    if user_status and user_status[0] == 1:
+        bot.answer_callback_query(call.id, "🚫 Siz bloklangansiz!", show_alert=True)
+        return
     
     if check_all_subs(user_id):
         try:
@@ -308,14 +370,12 @@ def check_sub_callback(call):
 @bot.message_handler(commands=['ibod'])
 def ibod_stats(message):
     if message.from_user.id not in ADMIN_IDS:
-        return # Oddiy odamga umuman javob qaytarmaydi (jim turadi)
+        return 
 
-    # Nechta referal qo'shganini aniqlash
     cursor.execute("SELECT referrals FROM users WHERE user_id = ?", (message.from_user.id,))
     ref_data = cursor.fetchone()
     my_refs = ref_data[0] if ref_data else 0
 
-    # Jami odamlarni aniqlash
     cursor.execute("SELECT COUNT(user_id) FROM users")
     total_users = cursor.fetchone()[0]
 
@@ -333,7 +393,7 @@ def ibod_stats(message):
 @bot.message_handler(commands=['admin'])
 def admin_panel(message):
     if message.from_user.id not in ADMIN_IDS:
-        return # Boshqa birov bossa jim turadi
+        return
 
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("📊 Statistika", callback_data="admin_stats"))
@@ -384,7 +444,7 @@ def process_broadcast(message):
 @bot.message_handler(commands=['give'])
 def give_loot_admin(message):
     if message.from_user.id not in ADMIN_IDS:
-        return # Jim turadi
+        return 
 
     try:
         args = message.text.split()
@@ -405,6 +465,31 @@ def give_loot_admin(message):
 
     except Exception as e:
         bot.reply_to(message, "⚠️ Xato format!\nTo'g'ri usul: /give ID MIQDOR\nMasalan: /give 123456789 59000000")
+
+# --- MAXSUS BAN KOMANDASI ---
+@bot.message_handler(commands=['ban'])
+def ban_user(message):
+    if message.from_user.id not in ADMIN_IDS:
+        return
+    try:
+        target_id = int(message.text.split()[1])
+        cursor.execute("UPDATE users SET is_banned=1 WHERE user_id=?", (target_id,))
+        conn.commit()
+        bot.reply_to(message, f"🚫 ✅ Qallob bloklandi!\n🆔 ID: {target_id}")
+    except Exception:
+        bot.reply_to(message, "To'g'ri usul: /ban ID raqami")
+
+@bot.message_handler(commands=['unban'])
+def unban_user(message):
+    if message.from_user.id not in ADMIN_IDS:
+        return
+    try:
+        target_id = int(message.text.split()[1])
+        cursor.execute("UPDATE users SET is_banned=0 WHERE user_id=?", (target_id,))
+        conn.commit()
+        bot.reply_to(message, f"✅ Foydalanuvchi blokdan yechildi!\n🆔 ID: {target_id}")
+    except Exception:
+        bot.reply_to(message, "To'g'ri usul: /unban ID raqami")
 
 @bot.message_handler(commands=['clear_refs'])
 def clear_refs(message):
