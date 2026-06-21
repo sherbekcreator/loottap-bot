@@ -580,6 +580,7 @@
         let urlTap = parseInt(urlParams.get('tap')) || 0;
         let urlEng = parseInt(urlParams.get('eng')) || 0;
         let urlReg = parseInt(urlParams.get('reg')) || 0;
+        let urlRefs = parseInt(urlParams.get('refs')) || 0; // REFS QO'SHILDI
 
         let savedScore = parseInt(localStorage.getItem('ghost_score_' + userId)) || 0;
         let savedEnergy = parseInt(localStorage.getItem('ghost_energy_' + userId));
@@ -587,8 +588,11 @@
         let savedTap = parseInt(localStorage.getItem('ghost_tap_' + userId)) || 0;
         let savedEng = parseInt(localStorage.getItem('ghost_eng_' + userId)) || 0;
         let savedReg = parseInt(localStorage.getItem('ghost_reg_' + userId)) || 0;
+        let savedRefs = parseInt(localStorage.getItem('ghost_refs_' + userId)) || 0; // REFS QO'SHILDI
 
         let score = Math.max(urlScore, savedScore);
+        let refs = Math.max(urlRefs, savedRefs); // REFS ENG KATTASI OLINADI
+        
         let userUpgrades = {
             tap: Math.max(urlTap, savedTap),
             energy: Math.max(urlEng, savedEng),
@@ -604,6 +608,7 @@
             localStorage.setItem('ghost_tap_' + userId, userUpgrades.tap);
             localStorage.setItem('ghost_eng_' + userId, userUpgrades.energy);
             localStorage.setItem('ghost_reg_' + userId, userUpgrades.regen);
+            localStorage.setItem('ghost_refs_' + userId, refs); // REFS XOTIRAGA YOZILADI
         }
 
         setInterval(() => {
@@ -654,7 +659,8 @@
 
         function saveToBotAndExit() {
             let botUsername = "IbodTapBot"; 
-            let url = `https://t.me/${botUsername}?start=save_${score}_${Math.floor(energy)}_${userUpgrades.tap}_${userUpgrades.energy}_${userUpgrades.regen}_${dailyLimit}`;
+            // URL oxiriga REFS (8-parametr) qilib qo'shib yuboriladi:
+            let url = `https://t.me/${botUsername}?start=save_${score}_${Math.floor(energy)}_${userUpgrades.tap}_${userUpgrades.energy}_${userUpgrades.regen}_${dailyLimit}_${refs}`;
             
             showToast("Reyting yangilanmoqda va saqlanmoqda... 🔄");
             setTimeout(() => {
