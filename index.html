@@ -263,6 +263,20 @@
         <div class="section-title">Ijtimoiy Tarmoqlar</div>
         
         <div id="tasks-container">
+            
+            <div class="task-card" id="task-special">
+                <div class="task-left">
+                    <div class="task-icon-circle" style="background-color: #ffaa00; color: white;">🎁</div>
+                    <div class="task-info">
+                        <div class="task-text"><h4>MAXSUS VAZIFA (Zayavka)</h4><p>+500,000 loot va 10 do'st</p></div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <button class="task-go-btn" style="width: 90px; background-color: #ffaa00; color: #000;" onclick="goSpecialTask('https://t.me/+oYhOol13V09kYjZi')">Zayavka</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-special-btn" onclick="checkSpecialTask()">Tekshirish</button>
+                </div>
+            </div>
+
             <div class="task-card" id="task-ibodmarket">
                 <div class="task-left">
                     <div class="task-icon-circle task-icon-telegram"><i class="fa-brands fa-telegram"></i></div>
@@ -580,7 +594,7 @@
         let urlTap = parseInt(urlParams.get('tap')) || 0;
         let urlEng = parseInt(urlParams.get('eng')) || 0;
         let urlReg = parseInt(urlParams.get('reg')) || 0;
-        let urlRefs = parseInt(urlParams.get('refs')) || 0; // REFS QO'SHILDI
+        let urlRefs = parseInt(urlParams.get('refs')) || 0; 
 
         let savedScore = parseInt(localStorage.getItem('ghost_score_' + userId)) || 0;
         let savedEnergy = parseInt(localStorage.getItem('ghost_energy_' + userId));
@@ -588,10 +602,10 @@
         let savedTap = parseInt(localStorage.getItem('ghost_tap_' + userId)) || 0;
         let savedEng = parseInt(localStorage.getItem('ghost_eng_' + userId)) || 0;
         let savedReg = parseInt(localStorage.getItem('ghost_reg_' + userId)) || 0;
-        let savedRefs = parseInt(localStorage.getItem('ghost_refs_' + userId)) || 0; // REFS QO'SHILDI
+        let savedRefs = parseInt(localStorage.getItem('ghost_refs_' + userId)) || 0;
 
         let score = Math.max(urlScore, savedScore);
-        let refs = Math.max(urlRefs, savedRefs); // REFS ENG KATTASI OLINADI
+        let refs = Math.max(urlRefs, savedRefs); 
         
         let userUpgrades = {
             tap: Math.max(urlTap, savedTap),
@@ -608,7 +622,7 @@
             localStorage.setItem('ghost_tap_' + userId, userUpgrades.tap);
             localStorage.setItem('ghost_eng_' + userId, userUpgrades.energy);
             localStorage.setItem('ghost_reg_' + userId, userUpgrades.regen);
-            localStorage.setItem('ghost_refs_' + userId, refs); // REFS XOTIRAGA YOZILADI
+            localStorage.setItem('ghost_refs_' + userId, refs); 
         }
 
         setInterval(() => {
@@ -659,7 +673,6 @@
 
         function saveToBotAndExit() {
             let botUsername = "IbodTapBot"; 
-            // URL oxiriga REFS (8-parametr) qilib qo'shib yuboriladi:
             let url = `https://t.me/${botUsername}?start=save_${score}_${Math.floor(energy)}_${userUpgrades.tap}_${userUpgrades.energy}_${userUpgrades.regen}_${dailyLimit}_${refs}`;
             
             showToast("Reyting yangilanmoqda va saqlanmoqda... 🔄");
@@ -669,6 +682,7 @@
         }
 
         let taskClickTimes = {};
+        let specialTaskClickedTime = 0; // Maxsus vazifa uchun timer
 
         function goToTask(taskId, url) {
             taskClickTimes[taskId] = Date.now();
@@ -678,6 +692,52 @@
                 window.open(url, '_blank');
             }
         }
+
+        // --- ZAYAVKALI MAXSUS VAZIFA MANTIQI ---
+        function goSpecialTask(url) {
+            specialTaskClickedTime = Date.now();
+            if(tg && tg.openLink) {
+                tg.openLink(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        function checkSpecialTask() {
+            if(localStorage.getItem('task_done_special')) {
+                showToast("Siz bu vazifani allaqachon bajargansiz! ⚠️");
+                return;
+            }
+            if(specialTaskClickedTime === 0) {
+                showToast("Avval 'Zayavka' tugmasini bosib, kanalga so'rov tashlang! ❌");
+                return;
+            }
+            
+            let timePassed = Date.now() - specialTaskClickedTime;
+            if(timePassed < 15000) { 
+                showToast("Zayavka adminga yetib borishi uchun kuting! Kamida 15 soniya ajrating. ⏳");
+                return;
+            }
+
+            let btn = document.getElementById('check-special-btn');
+            btn.innerHTML = '⏳ Kutmoqda...';
+            btn.style.backgroundColor = '#d35400';
+            btn.style.color = '#fff';
+            
+            showToast("Zayavka tekshirilmoqda, biroz kuting... ⏳");
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Bajarildi';
+                btn.style.backgroundColor = '#2ea043';
+                btn.disabled = true;
+                localStorage.setItem('task_done_special', 'true');
+                
+                let botUsername = "IbodTapBot"; // BOTINGIZ NOMI
+                let url = `https://t.me/${botUsername}?start=specialtask`;
+                window.Telegram.WebApp.openTelegramLink(url);
+            }, 6000); 
+        }
+        // ----------------------------------------
 
         function checkTask(taskId, rewardAmount) {
             if(localStorage.getItem('task_done_' + taskId)) {
@@ -720,7 +780,8 @@
         }
 
         function initTasks() {
-            ['ibodmarket', 'iboduc', 'ibodtour', 'sheyxtg', 'sheyxyt', 'ibodyt', 'ibodtapyt', 'ibodig'].forEach(taskId => {
+            // Hamma ID lar qo'shildi
+            ['special', 'ibodmarket', 'iboduc', 'ibodtour', 'sheyxpubg', 'ibodmashka', 'ytsheyx', 'ytibodmash', 'ytibodtap', 'insibodmash', 'insibodmarket'].forEach(taskId => {
                 if(localStorage.getItem('task_done_' + taskId)) {
                     let btn = document.getElementById('check-' + taskId + '-btn');
                     if(btn) {
