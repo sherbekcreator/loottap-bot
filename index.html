@@ -615,24 +615,6 @@
         let energy = isNaN(savedEnergy) ? urlEnergy : savedEnergy; 
         let dailyLimit = isNaN(savedLimit) ? urlLimit : savedLimit;
 
-        function ghostSave() {
-            localStorage.setItem('ghost_score_' + userId, score);
-            localStorage.setItem('ghost_energy_' + userId, Math.floor(energy));
-            localStorage.setItem('ghost_limit_' + userId, dailyLimit);
-            localStorage.setItem('ghost_tap_' + userId, userUpgrades.tap);
-            localStorage.setItem('ghost_eng_' + userId, userUpgrades.energy);
-            localStorage.setItem('ghost_reg_' + userId, userUpgrades.regen);
-            localStorage.setItem('ghost_refs_' + userId, refs); 
-        }
-
-        setInterval(() => {
-            ghostSave();
-        }, 2000);
-
-        document.getElementById('username').innerText = userName;
-        document.getElementById('myRankName').innerText = userName;
-        document.getElementById('myRankAvatar').innerText = userName.charAt(0).toUpperCase();
-
         const shopData = {
             tap: { levels: [1, 2, 4, 8, 16, 25, 40, 60, 90, 150], prices: [15000, 45000, 120000, 300000, 750000, 1500000, 3000000, 7500000, 15000000] },
             energy: { max: [1000, 2000, 3500, 5000, 7000, 10000, 15000, 25000, 40000, 60000], limit: [15000, 30000, 52500, 75000, 100000, 150000, 250000, 400000, 650000, 1000000], prices: [20000, 60000, 150000, 400000, 900000, 2000000, 4500000, 10000000, 20000000] },
@@ -644,6 +626,35 @@
         userUpgrades.regen = Math.min(userUpgrades.regen, shopData.regen.levels.length - 1);
 
         let maxEnergy = shopData.energy.max[userUpgrades.energy];
+
+        // OFFLINE ENERGIYA HISOBI
+        let lastTime = parseInt(localStorage.getItem('ghost_last_time_' + userId)) || Date.now();
+        let secondsOffline = Math.floor((Date.now() - lastTime) / 1000);
+        let offlineRegen = secondsOffline * shopData.regen.levels[userUpgrades.regen];
+        
+        if (secondsOffline > 0 && secondsOffline < 31536000) { 
+            energy += offlineRegen;
+            if (energy > maxEnergy) energy = maxEnergy;
+        }
+
+        function ghostSave() {
+            localStorage.setItem('ghost_score_' + userId, score);
+            localStorage.setItem('ghost_energy_' + userId, Math.floor(energy));
+            localStorage.setItem('ghost_limit_' + userId, dailyLimit);
+            localStorage.setItem('ghost_tap_' + userId, userUpgrades.tap);
+            localStorage.setItem('ghost_eng_' + userId, userUpgrades.energy);
+            localStorage.setItem('ghost_reg_' + userId, userUpgrades.regen);
+            localStorage.setItem('ghost_refs_' + userId, refs); 
+            localStorage.setItem('ghost_last_time_' + userId, Date.now()); 
+        }
+
+        setInterval(() => {
+            ghostSave();
+        }, 2000);
+
+        document.getElementById('username').innerText = userName;
+        document.getElementById('myRankName').innerText = userName;
+        document.getElementById('myRankAvatar').innerText = userName.charAt(0).toUpperCase();
 
         const scoreEl = document.getElementById('score');
         const energyTextEl = document.getElementById('energyText');
@@ -672,7 +683,7 @@
         updateEnergyUI();
 
         function saveToBotAndExit() {
-            let botUsername = "IbodTapBot"; 
+            let botUsername = "IbodTapBot"; // O'ZINGIZNING BOTINGIZ
             let url = `https://t.me/${botUsername}?start=save_${score}_${Math.floor(energy)}_${userUpgrades.tap}_${userUpgrades.energy}_${userUpgrades.regen}_${dailyLimit}_${refs}`;
             
             showToast("Reyting yangilanmoqda va saqlanmoqda... 🔄");
@@ -682,7 +693,7 @@
         }
 
         let taskClickTimes = {};
-        let specialTaskClickedTime = 0; // Maxsus vazifa uchun timer
+        let specialTaskClickedTime = 0; 
 
         function goToTask(taskId, url) {
             taskClickTimes[taskId] = Date.now();
@@ -693,7 +704,6 @@
             }
         }
 
-        // --- ZAYAVKALI MAXSUS VAZIFA MANTIQI ---
         function goSpecialTask(url) {
             specialTaskClickedTime = Date.now();
             if(tg && tg.openLink) {
@@ -732,12 +742,11 @@
                 btn.disabled = true;
                 localStorage.setItem('task_done_special', 'true');
                 
-                let botUsername = "IbodTapBot"; // BOTINGIZ NOMI
+                let botUsername = "IbodTapBot"; // O'ZINGIZNING BOTINGIZ
                 let url = `https://t.me/${botUsername}?start=specialtask`;
                 window.Telegram.WebApp.openTelegramLink(url);
             }, 6000); 
         }
-        // ----------------------------------------
 
         function checkTask(taskId, rewardAmount) {
             if(localStorage.getItem('task_done_' + taskId)) {
@@ -780,7 +789,6 @@
         }
 
         function initTasks() {
-            // Hamma ID lar qo'shildi
             ['special', 'ibodmarket', 'iboduc', 'ibodtour', 'sheyxpubg', 'ibodmashka', 'ytsheyx', 'ytibodmash', 'ytibodtap', 'insibodmash', 'insibodmarket'].forEach(taskId => {
                 if(localStorage.getItem('task_done_' + taskId)) {
                     let btn = document.getElementById('check-' + taskId + '-btn');
@@ -884,7 +892,7 @@
             if (score >= price) {
                 score -= price; updateScoreDisplays(); ghostSave();
                 let safeNick = nick.replace(/[^a-zA-Z0-9]/g, ''); if (safeNick === "") safeNick = "Nomsiz";
-                let botUsername = "IbodTapBot"; 
+                let botUsername = "IbodTapBot"; // O'ZINGIZNING BOTINGIZ
                 let url = `https://t.me/${botUsername}?start=withdraw_${type}_${price}_${score}_${id}_${safeNick}`;
                 window.Telegram.WebApp.openTelegramLink(url);
                 showToast("Xarid qabul qilindi! Reyting yangilanmoqda... 🔄");
@@ -929,7 +937,7 @@
             } 
 
             let safeNick = nick.replace(/[^a-zA-Z0-9]/g, ''); if (safeNick === "") safeNick = "Nomsiz";
-            let botUsername = "IbodTapBot"; 
+            let botUsername = "IbodTapBot"; // O'ZINGIZNING BOTINGIZ
             
             let url = `https://t.me/${botUsername}?start=refwithdraw_${prizeName}_${cost}_${id}_${safeNick}`;
             window.Telegram.WebApp.openTelegramLink(url);
@@ -937,7 +945,7 @@
         }
 
         function copyRefLink() {
-            let botUsername = "IbodTapBot";
+            let botUsername = "IbodTapBot"; // O'ZINGIZNING BOTINGIZ
             let refLink = `https://t.me/${botUsername}?start=ref_${userId}`;
             
             let shareText = `🎮 PUBG UC va FF, MLBB Almaz ishlash endi juda oson!\nBot orqali Loot to'plang va ularni UC yoki Almazga almashtiring 💎\n\nKiring va sovg'a oling! 👇`;
@@ -999,17 +1007,37 @@
 
         let isSpinning = false, currentRotation = 0, countdownInterval;
         
-        function startSpin() {
+        async function getRealTime() {
+            try {
+                let res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+                let data = await res.json();
+                return new Date(data.datetime).getTime();
+            } catch (e) {
+                return Date.now();
+            }
+        }
+
+        async function startSpin() {
             if (isSpinning) return;
             
-            let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin')) || 0;
-            if(Date.now() < nextSpinTime) return showToast("24 soatda faqat 1 marta!");
+            const btn = document.getElementById('spinActionBtn');
+            btn.innerText = "Tekshirilmoqda...";
+            btn.className = "spin-btn-disabled";
+
+            let realTime = await getRealTime();
+            let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin_' + userId)) || 0;
+            
+            if(realTime < nextSpinTime) {
+                showToast("24 soatda faqat 1 marta!");
+                checkSpinStatus();
+                return;
+            }
             
             isSpinning = true;
-            nextSpinTime = Date.now() + (24 * 60 * 60 * 1000);
-            localStorage.setItem('loottap_next_spin', nextSpinTime);
+            nextSpinTime = realTime + (24 * 60 * 60 * 1000);
+            localStorage.setItem('loottap_next_spin_' + userId, nextSpinTime);
             
-            const wheel = document.getElementById('wheel'), btn = document.getElementById('spinActionBtn');
+            const wheel = document.getElementById('wheel');
             
             let randPercent = Math.random() * 100;
             let randIndex;
@@ -1033,7 +1061,7 @@
             
             wheel.style.transform = `rotate(${targetRotation}deg)`; 
             currentRotation = targetRotation;
-            btn.className = "spin-btn-disabled"; btn.innerText = "Aylantirilmoqda...";
+            btn.innerText = "Aylantirilmoqda...";
             
             setTimeout(() => {
                 score += prize.value; updateScoreDisplays(); ghostSave();
@@ -1047,21 +1075,26 @@
             setTimeout(() => { toast.style.bottom = "-100px"; }, 3000);
         }
 
-        function checkSpinStatus() {
-            let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin')) || 0;
-            const btn = document.getElementById('spinActionBtn'); let now = Date.now();
+        async function checkSpinStatus() {
+            let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin_' + userId)) || 0;
+            const btn = document.getElementById('spinActionBtn'); 
+            let now = await getRealTime();
+            
             if (now < nextSpinTime) {
                 isSpinning = true; btn.className = "spin-btn-disabled";
                 clearInterval(countdownInterval);
                 countdownInterval = setInterval(() => {
-                    now = Date.now(); let timeLeft = Math.floor((nextSpinTime - now) / 1000);
+                    now += 1000; 
+                    let timeLeft = Math.floor((nextSpinTime - now) / 1000);
                     if (timeLeft <= 0) {
                         clearInterval(countdownInterval); btn.className = "spin-btn-active"; btn.innerText = "Aylantirish"; isSpinning = false;
                     } else {
                         const h = Math.floor(timeLeft / 3600).toString().padStart(2, '0'), m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0'), s = (timeLeft % 60).toString().padStart(2, '0');
-                        btn.innerText = `Keyingi aylantirish: ${h}:${m}:${s}`;
+                        btn.innerText = `Keyingi: ${h}:${m}:${s}`;
                     }
                 }, 1000);
+            } else {
+                btn.className = "spin-btn-active"; btn.innerText = "Aylantirish"; isSpinning = false;
             }
         }
         checkSpinStatus();
