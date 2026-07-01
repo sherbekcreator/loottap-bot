@@ -627,15 +627,51 @@
 
         let maxEnergy = shopData.energy.max[userUpgrades.energy];
 
-        // OFFLINE ENERGIYA HISOBI
-        let lastTime = parseInt(localStorage.getItem('ghost_last_time_' + userId)) || Date.now();
-        let secondsOffline = Math.floor((Date.now() - lastTime) / 1000);
-        let offlineRegen = secondsOffline * shopData.regen.levels[userUpgrades.regen];
-        
-        if (secondsOffline > 0 && secondsOffline < 31536000) { 
-            energy += offlineRegen;
-            if (energy > maxEnergy) energy = maxEnergy;
+        const scoreEl = document.getElementById('score');
+        const energyTextEl = document.getElementById('energyText');
+        const limitTextEl = document.getElementById('limitText');
+        const energyBarEl = document.getElementById('energyBar');
+        const tapBtn = document.getElementById('tapBtn');
+        const myRankScoreEl = document.getElementById('myRankScore');
+        const maxEnergyTextEl = document.getElementById('maxEnergyText');
+
+        // --- INTERNET API DAN ANI VAQTNI OLISH ---
+        async function getRealTime() {
+            try {
+                let res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+                let data = await res.json();
+                return new Date(data.datetime).getTime();
+            } catch (e) {
+                return Date.now();
+            }
         }
+
+        // --- KUNLIK LIMITNI XAVFSIZ YANGILASH VA ENERGIYA TO'LDIRISH ---
+        async function initSecureDailyLimit() {
+            let realTime = await getRealTime();
+            let todayString = new Date(realTime).toDateString(); 
+            let lastPlayedDay = localStorage.getItem('loottap_last_day_' + userId);
+
+            // Agar yangi kun boshlangan bo'lsa limit to'ladi
+            if (lastPlayedDay !== todayString) {
+                dailyLimit = shopData.energy.limit[userUpgrades.energy];
+                localStorage.setItem('loottap_last_day_' + userId, todayString);
+                localStorage.setItem('ghost_limit_' + userId, dailyLimit);
+                limitTextEl.innerText = dailyLimit.toLocaleString();
+            }
+
+            // Offline energiya hisobi
+            let lastTime = parseInt(localStorage.getItem('ghost_last_time_' + userId)) || realTime;
+            let secondsOffline = Math.floor((realTime - lastTime) / 1000);
+            let offlineRegen = secondsOffline * shopData.regen.levels[userUpgrades.regen];
+            
+            if (secondsOffline > 0 && secondsOffline < 31536000) { 
+                energy += offlineRegen;
+                if (energy > maxEnergy) energy = maxEnergy;
+                updateEnergyUI();
+            }
+        }
+        initSecureDailyLimit(); // Buni darhol chaqiramiz
 
         function ghostSave() {
             localStorage.setItem('ghost_score_' + userId, score);
@@ -655,14 +691,6 @@
         document.getElementById('username').innerText = userName;
         document.getElementById('myRankName').innerText = userName;
         document.getElementById('myRankAvatar').innerText = userName.charAt(0).toUpperCase();
-
-        const scoreEl = document.getElementById('score');
-        const energyTextEl = document.getElementById('energyText');
-        const limitTextEl = document.getElementById('limitText');
-        const energyBarEl = document.getElementById('energyBar');
-        const tapBtn = document.getElementById('tapBtn');
-        const myRankScoreEl = document.getElementById('myRankScore');
-        const maxEnergyTextEl = document.getElementById('maxEnergyText');
 
         function updateScoreDisplays() {
             let formatted = score.toLocaleString();
@@ -1007,16 +1035,6 @@
 
         let isSpinning = false, currentRotation = 0, countdownInterval;
         
-        async function getRealTime() {
-            try {
-                let res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-                let data = await res.json();
-                return new Date(data.datetime).getTime();
-            } catch (e) {
-                return Date.now();
-            }
-        }
-
         async function startSpin() {
             if (isSpinning) return;
             
@@ -1067,12 +1085,6 @@
                 score += prize.value; updateScoreDisplays(); ghostSave();
                 showToast(`🎉 Tabriklaymiz! Sizga ${prize.name} tushdi!`); checkSpinStatus();
             }, 4000); 
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toastNotification');
-            toast.innerText = message; toast.style.bottom = "100px"; 
-            setTimeout(() => { toast.style.bottom = "-100px"; }, 3000);
         }
 
         async function checkSpinStatus() {
