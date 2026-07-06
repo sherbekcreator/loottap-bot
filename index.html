@@ -263,19 +263,23 @@
         <div class="section-title">Ijtimoiy Tarmoqlar</div>
         
         <div id="tasks-container">
-            
-            <div class="task-card" id="task-special">
-                <div class="task-left">
-                    <div class="task-icon-circle" style="background-color: #ffaa00; color: white;">🎁</div>
-                    <div class="task-info">
-                        <div class="task-text"><h4>MAXSUS VAZIFA (Zayavka)</h4><p>+500,000 loot va 10 do'st</p></div>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <button class="task-go-btn" style="width: 90px; background-color: #ffaa00; color: #000;" onclick="goSpecialTask('https://t.me/+oYhOol13V09kYjZi')">Zayavka</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-special-btn" onclick="checkSpecialTask()">Tekshirish</button>
-                </div>
-            </div>
+
+           <div class="task-card" id="task-kattahomiy" style="border: 2px solid #ff0000; background: linear-gradient(145deg, #161b22 0%, rgba(255, 0, 0, 0.1) 100%);">
+               <div class="task-left">
+                   <div class="task-icon-circle" style="background: #ff0000; color: #ffffff; box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);"><i class="fa-brands fa-youtube"></i></div>
+                   <div class="task-info">
+                       <div class="task-text">
+                           <h4 style="color: #ff4d4d; font-weight: 900; font-size: 16px; letter-spacing: 0.5px;">👑 KATTA HOMIY</h4>
+                           <p style="color: #ffd700; font-size: 14px; text-shadow: 0 0 5px rgba(255, 215, 0, 0.4);">+1,500,000 loot</p>
+                       </div>
+                   </div>
+               </div>
+               <div style="display: flex; flex-direction: column; gap: 5px;">
+                   <button class="task-go-btn" style="width: 90px; background-color: #ff0000; box-shadow: 0 4px 10px rgba(255, 0, 0, 0.4); text-transform: uppercase;" onclick="goToTask('kattahomiy', 'https://youtube.com/@ali_vortex07?si=C1KK4uZWDuxQYoir')">Obuna</button>
+                   <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-kattahomiy-btn" onclick="checkTask('kattahomiy', 1500000)">Tekshirish</button>
+               </div>
+           </div>
+
 
             <div class="task-card" id="task-ibodmarket">
                 <div class="task-left">
@@ -316,19 +320,6 @@
                 </div>
             </div>
 
-            <div class="task-card" id="task-sheyxpubg">
-                <div class="task-left">
-                    <div class="task-icon-circle task-icon-telegram"><i class="fa-brands fa-telegram"></i></div>
-                    <div class="task-info">
-                        <div class="task-text"><h4>SHEYX PUBG (TG)</h4><p>+60,000 loot</p></div>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('sheyxpubg', 'https://t.me/etoSHEYXpubg')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-sheyxpubg-btn" onclick="checkTask('sheyxpubg', 60000)">Tekshirish</button>
-                </div>
-            </div>
-
             <div class="task-card" id="task-ibodmashka">
                 <div class="task-left">
                     <div class="task-icon-circle task-icon-telegram"><i class="fa-brands fa-telegram"></i></div>
@@ -342,24 +333,11 @@
                 </div>
             </div>
 
-            <div class="task-card" id="task-ytsheyx">
-                <div class="task-left">
-                    <div class="task-icon-circle" style="background: rgba(255,0,0,0.1); color: #ff0000;"><i class="fa-brands fa-youtube"></i></div>
-                    <div class="task-info">
-                        <div class="task-text"><h4>SHEYX PUBG (YT)</h4><p>+60,000 loot</p></div>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <button class="task-go-btn" style="width: 90px; background-color: #ff0000;" onclick="goToTask('ytsheyx', 'https://youtube.com/@etosheyxpubgm?si=7u6mMJ8I_8Eg896Q')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ytsheyx-btn" onclick="checkTask('ytsheyx', 60000)">Tekshirish</button>
-                </div>
-            </div>
-
             <div class="task-card" id="task-ytibodmash">
                 <div class="task-left">
                     <div class="task-icon-circle" style="background: rgba(255,0,0,0.1); color: #ff0000;"><i class="fa-brands fa-youtube"></i></div>
                     <div class="task-info">
-                        <div class="task-text"><h4>IBOD MASHENNA (YT)</h4><p>+60,000 loot</p></div>
+                        <div class="task-text"><h4>IBOD MASHENKA (YT)</h4><p>+60,000 loot</p></div>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -385,7 +363,7 @@
                 <div class="task-left">
                     <div class="task-icon-circle" style="background: rgba(225,48,108,0.1); color: #E1306C;"><i class="fa-brands fa-instagram"></i></div>
                     <div class="task-info">
-                        <div class="task-text"><h4>IBOD MASHENNA (INS)</h4><p>+60,000 loot</p></div>
+                        <div class="task-text"><h4>IBOD MASHENKA (INS)</h4><p>+60,000 loot</p></div>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
