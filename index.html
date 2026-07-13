@@ -11,45 +11,55 @@
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0d1117; color: #ffffff; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .app-tab { display: none; width: 100%; height: 100%; flex-direction: column; overflow-y: auto; }
-        .app-tab::after { content: ""; display: block; min-height: 140px; flex-shrink: 0; }
+        
+        .app-tab { display: none; width: 100%; height: 100%; flex-direction: column; overflow-y: auto; padding-bottom: 80px; }
         .app-tab.active { display: flex; }
+        
         .header { flex-shrink: 0; padding: 20px; text-align: center; z-index: 10; }
         .user-info { font-size: 14px; color: #8b949e; margin-bottom: 10px; font-weight: bold; }
         .balance-container { display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 36px; font-weight: bold; }
         .balance-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #ffd700, #ffaa00); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
         .daily-limit { font-size: 13px; color: #8b949e; margin-top: 8px; font-weight: 500; }
+        
         .screens-wrapper { position: relative; flex-grow: 1; overflow: hidden; display: flex; }
         .screen-tap { position: absolute; width: 100%; height: 100%; left: 0; transition: transform 0.4s ease; display: flex; justify-content: center; align-items: center; }
         .screen-spin { position: absolute; width: 100%; height: 100%; left: 100%; transition: transform 0.4s ease; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        
         .tap-button { width: 280px; height: 280px; background: radial-gradient(circle, #2ea043 0%, #238636 100%); border-radius: 50%; box-shadow: 0 10px 30px rgba(46, 160, 67, 0.4), inset 0 -10px 20px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.1s ease; position: relative; z-index: 10; }
         .tap-button:active { transform: scale(0.95); }
         .tap-logo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 8px solid #2ea043; pointer-events: none; }
+        
         .side-tab { position: absolute; right: 0; top: 50%; transform: translateY(-50%); background-color: #238636; color: white; padding: 15px 5px; border-radius: 8px 0 0 8px; font-size: 13px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 20; border: 2px solid #2ea043; border-right: none; transition: all 0.4s ease; }
         .side-tab.moved-left { right: auto; left: 0; border-radius: 0 8px 8px 0; border-left: none; border-right: 2px solid #2ea043; box-shadow: 3px 0 10px rgba(0,0,0,0.4); }
         .tab-text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 5px; }
         .side-tab.moved-left .tab-text-vertical { transform: rotate(0deg); margin-top: 0; margin-bottom: 5px; }
+        
+        /* Baraban CSS orqali silliq aylanishi */
         .wheel-container { position: relative; width: 280px; height: 280px; flex-shrink: 0; margin-bottom: 15px; }
         .roulette-wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 20px rgba(46, 160, 67, 0.4); position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); transform: rotate(0deg); background: conic-gradient( #2ea043 0deg 45deg, #000 45deg 90deg, #fff 90deg 135deg, #000 135deg 180deg, #2ea043 180deg 225deg, #000 225deg 270deg, #fff 270deg 315deg, #000 315deg 360deg ); }
         .wheel-text-container { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
         .wheel-text { position: absolute; width: 50%; height: 20px; top: calc(50% - 10px); left: 50%; transform-origin: left center; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: flex-end; padding-right: 30px; font-family: Arial, sans-serif; white-space: nowrap; }
         .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: #161b22; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #fff; z-index: 5; }
         .wheel-pointer { position: absolute; top: 50%; right: -18px; transform: translateY(-50%); width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 20px solid #fff; z-index: 4; filter: drop-shadow(2px 0 2px rgba(0,0,0,0.5)); }
+        
         .spin-btn-active { background-color: #388E3C; color: #ffffff; padding: 14px 30px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 10px; border: none; cursor: pointer; width: 85%; transition: 0.2s; }
         .spin-btn-active:active { transform: scale(0.95); }
         .spin-btn-disabled { background-color: #c4c4c4; color: #333333; padding: 14px 10px; border-radius: 12px; font-weight: bold; font-size: 15px; margin-top: 10px; border: none; width: 85%; }
         .spin-note { font-size: 12px; color: #8b949e; margin-top: 12px; }
-        .energy-wrapper { padding: 10px 20px 25px 20px; background-color: #0d1117; flex-shrink: 0; z-index: 50; position: relative; }
+        
+        .energy-wrapper { padding: 10px 20px 25px 20px; flex-shrink: 0; z-index: 50; position: relative; }
         .energy-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .energy-text { font-size: 18px; font-weight: bold; }
         .boost-btn-small { background-color: #21262d; border: 1px solid #30363d; color: white; padding: 8px 15px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .boost-btn-small:active { transform: scale(0.95); }
         .progress-bar-bg { width: 100%; height: 10px; background-color: #21262d; border-radius: 5px; overflow: hidden; }
         .progress-bar-fill { height: 100%; background-color: #2ea043; width: 100%; transition: width 0.2s ease; }
-        .page-header { text-align: center; padding: 20px; border-bottom: 1px solid #30363d; margin-bottom: 10px; }
+        
+        .page-header { text-align: center; padding: 20px; margin-bottom: 10px; }
         .page-header h2 { font-size: 20px; margin-bottom: 5px; }
         .page-header p { font-size: 13px; color: #8b949e; }
-        .section-title { font-size: 16px; font-weight: bold; margin: 15px 20px 10px 20px; color: #8b949e; }
+        .section-title { font-size: 16px; font-weight: bold; margin: 15px 20px 10px 20px; color: #8b949e; text-transform: uppercase;}
+        
         .task-card { background-color: #161b22; border-radius: 12px; padding: 15px; margin: 0 20px 12px 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; transition: all 0.3s ease;}
         .task-left { display: flex; align-items: center; gap: 15px; }
         .task-icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; color: white; }
@@ -74,26 +84,27 @@
         .input-group input:focus { border-color: #2ea043; }
         .submit-btn { width: 100%; background-color: #2ea043; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; border: none; margin-top: 10px; cursor: pointer; transition: 0.2s; }
         .submit-btn:active { transform: scale(0.98); }
+        
         .red-btn { background-color: #e74c3c; color: white; border-radius: 12px; padding: 14px; margin: 0 20px 15px 20px; font-weight: bold; font-size: 15px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
         .invite-btn { background-color: #2ea043; color: white; border-radius: 12px; padding: 16px; margin: 10px 20px 10px 20px; font-weight: bold; font-size: 16px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); }
         
-        .rank-list { padding: 0 20px; }
-        .rank-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #30363d; }
-        .rank-number { width: 35px; font-weight: bold; color: #8b949e; font-size: 16px; display: flex; align-items: center; }
-        .rank-number.gold { font-size: 22px; }
-        .rank-number.silver { font-size: 22px; }
-        .rank-number.bronze { font-size: 22px; }
-        .rank-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #2ea043; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 15px; font-size: 18px; color: white; }
-        .rank-details { flex-grow: 1; }
-        .rank-name { font-size: 15px; font-weight: bold; }
-        .rank-score { font-size: 13px; color: #2ea043; font-weight: bold; margin-top: 3px; }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background-color: #161b22; padding: 15px 10px 25px 10px; border-top: 1px solid #30363d; z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #8b949e; font-size: 12px; cursor: pointer; width: 20%; gap: 5px; font-weight: 500; }
+        .ref-rule { background-color: rgba(255, 215, 0, 0.1); border: 1px solid #ffaa00; padding: 10px; margin: 0 20px 15px 20px; border-radius: 8px; font-size: 12px; color: #ffd700; text-align: center; }
+        .ref-box { display: flex; justify-content: space-between; align-items: center; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; transition: 0.2s; cursor: pointer;}
+        .ref-box.active { border-color: #2ea043; background-color: rgba(46, 160, 67, 0.1); }
+        .ref-info h3 { font-size: 16px; color: white; }
+        .ref-info p { font-size: 12px; color: #8b949e; margin-top: 3px; }
+        .ref-cost { background-color: #2ea043; color: white; padding: 5px 10px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+        
+        /* Shaffof va Toza Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background: linear-gradient(to top, rgba(13,17,23,1) 50%, rgba(13,17,23,0) 100%); padding: 25px 10px 15px 10px; z-index: 1000; border-top: none; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #8b949e; font-size: 12px; cursor: pointer; width: 20%; gap: 5px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .nav-item.active { color: #2ea043; }
-        .nav-icon { font-size: 22px; }
+        .nav-icon { font-size: 24px; }
+
         .toast-notification { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #2ea043; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 4000; transition: bottom 0.4s; white-space: nowrap; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .floating-number { position: absolute; font-size: 28px; font-weight: bold; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.8); pointer-events: none; animation: floatUp 1s forwards; z-index: 100; }
+        
+        /* Floating number qatlamni eng oldiga chiqarish */
+        .floating-number { position: absolute; font-size: 28px; font-weight: bold; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.8); pointer-events: none; animation: floatUp 1s forwards; z-index: 5000; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
         
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3500; display: none; opacity: 0; transition: opacity 0.3s; }
@@ -113,21 +124,45 @@
         .modal.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
         .modal-close { background-color: #30363d; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
         
-        .ref-rule { background-color: rgba(255, 215, 0, 0.1); border: 1px solid #ffaa00; padding: 10px; margin: 0 20px 15px 20px; border-radius: 8px; font-size: 12px; color: #ffd700; text-align: center; }
-        .ref-box { display: flex; justify-content: space-between; align-items: center; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; transition: 0.2s; cursor: pointer;}
-        .ref-box.active { border-color: #2ea043; background-color: rgba(46, 160, 67, 0.1); }
-        .ref-info h3 { font-size: 16px; color: white; }
-        .ref-info p { font-size: 12px; color: #8b949e; margin-top: 3px; }
-        .ref-cost { background-color: #2ea043; color: white; padding: 5px 10px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+        /* O'tkazma Oynasi */
+        .transfer-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin: 0 20px; }
+        .transfer-title { font-size: 14px; font-weight: bold; color: #ffaa00; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .transfer-my-id { background: #0d1117; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #30363d; margin-bottom: 15px; }
+        .transfer-my-id span { color: #ffd700; font-size: 18px; font-weight: bold; display: block; margin-top: 5px; }
     </style>
 </head>
 <body>
 
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        const urlParams = new URLSearchParams(window.location.search);
+        let userId = urlParams.get('userid') || tg.initDataUnsafe?.user?.id || "123456";
+        let userName = tg.initDataUnsafe?.user?.first_name || "O'yinchi";
+
+        async function checkAccess() {
+            try {
+                let response = await fetch(`http://212.43.146.114:10000/check_access?userid=${userId}`);
+                let result = await response.json();
+                if (!result.subscribed) {
+                    document.body.innerHTML = `
+                        <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#0d1117; padding:20px; text-align:center;'>
+                            <div style='font-size: 60px; margin-bottom: 20px;'>🚧</div>
+                            <h2 style='color:#e74c3c; margin-bottom:15px;'>KIRISH TAQIQLANGAN!</h2>
+                            <p style='color:#8b949e; font-size:15px;'>Siz barcha majburiy kanallarga obuna bo'lmagansiz yoki botni qayta ishga tushirishingiz kerak.</p>
+                            <button onclick='tg.close()' style='margin-top: 30px; background:#2ea043; color:white; border:none; padding:15px 30px; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;'>Botga qaytish</button>
+                        </div>`;
+                }
+            } catch(e) { console.log("Qorovul xatosi:", e); }
+        }
+        checkAccess();
+    </script>
+
     <div id="tab-main" class="app-tab active">
         <div class="header">
-            <div class="user-info" id="username">LootTap O'yinchisi</div>
+            <div class="user-info" id="username_display">LootTap O'yinchisi</div>
             <div class="balance-container">
-                <div class="balance-icon">💎</div>
+                <div class="balance-icon">🪙</div>
                 <span id="score">0</span>
             </div>
             <div class="daily-limit">Bugunlik limit: <span id="limitText">15,000</span></div>
@@ -144,14 +179,14 @@
                 <div class="wheel-container">
                     <div class="roulette-wheel" id="wheel">
                         <div class="wheel-text-container">
-                            <div class="wheel-text" style="transform: rotate(22.5deg); color: #111;">500k loot</div>
-                            <div class="wheel-text" style="transform: rotate(67.5deg); color: #fff;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(22.5deg); color: #fff;">500k loot</div>
+                            <div class="wheel-text" style="transform: rotate(67.5deg); color: #111;">200k loot</div>
                             <div class="wheel-text" style="transform: rotate(112.5deg); color: #fff;">300k loot</div>
-                            <div class="wheel-text" style="transform: rotate(157.5deg); color: #fff;">200k loot</div>
-                            <div class="wheel-text" style="transform: rotate(202.5deg); color: #111;">500k loot</div>
-                            <div class="wheel-text" style="transform: rotate(247.5deg); color: #fff;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(157.5deg); color: #111;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(202.5deg); color: #fff;">500k loot</div>
+                            <div class="wheel-text" style="transform: rotate(247.5deg); color: #111;">200k loot</div>
                             <div class="wheel-text" style="transform: rotate(292.5deg); color: #fff;">300k loot</div>
-                            <div class="wheel-text" style="transform: rotate(337.5deg); color: #fff;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(337.5deg); color: #111;">200k loot</div>
                         </div>
                     </div>
                     <div class="wheel-center">LootTap<div class="wheel-pointer"></div></div>
@@ -179,25 +214,42 @@
 
     <div id="tab-konkurs" class="app-tab">
         <div class="page-header">
-            <h2>🏆 Tekin UC Konkursi</h2>
-            <p>Kanalga obuna bo'ling va tekin UC yutib oling</p>
+            <h2>🏆 Ikkita Super Konkurs</h2>
+            <p>Kanallarga obuna bo'ling va tekin UC yutib oling</p>
         </div>
 
         <div style="background: #161b22; border: 2px solid #ffaa00; margin: 10px 20px 20px 20px; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 0 15px rgba(255, 170, 0, 0.2); position: relative; z-index: 100;">
-            <h3 id="konkurs-main-title" style="color: #ffd700; margin-bottom: 5px; font-size: 18px;">🎁 Tekin UC yutib olish</h3>
-            <p id="konkurs-channel-name" style="font-size: 13px; color: #8b949e; margin-bottom: 12px;">Kanalga obuna bo'ling</p>
+            <h3 id="konkurs1-main-title" style="color: #ffd700; margin-bottom: 5px; font-size: 18px;">🎁 1-Konkurs: Tekin UC</h3>
+            <p id="konkurs1-channel-name" style="font-size: 13px; color: #8b949e; margin-bottom: 12px;">Yuklanmoqda...</p>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <button class="task-go-btn" id="konkurs-obuna-btn" data-link="https://t.me/+hGrzwfIvmwE4M2Ji" style="flex: 1; background-color: #e74c3c; padding: 12px 0; font-size: 14px;" onclick="goToKonkurs()">🔴 Obuna bo'lish</button>
-                <button class="task-go-btn" id="konkurs-check-btn" style="flex: 1; background-color: #2ea043; padding: 12px 0; font-size: 14px;" onclick="checkKonkurs()">✅ Tekshirish</button>
+                <button class="task-go-btn" id="konkurs1-obuna-btn" style="flex: 1; background-color: #e74c3c; padding: 12px 0; font-size: 14px;" onclick="goToKonkurs(1)">🔴 Obuna bo'lish</button>
+                <button class="task-go-btn" id="konkurs1-check-btn" style="flex: 1; background-color: #2ea043; padding: 12px 0; font-size: 14px;" onclick="checkKonkurs(1)">✅ Tekshirish</button>
             </div>
-            <div style="background: #0d1117; padding: 10px; border-radius: 8px; font-weight: bold; color: #fff; border: 1px solid #30363d;" id="konkurs-status">
-                Qatnashuvchilar: <span id="konkurs-count" style="color: #ffaa00;">Yuklanmoqda...</span> / <span id="konkurs-max">0000</span>
+            <div style="background: #0d1117; padding: 10px; border-radius: 8px; font-weight: bold; color: #fff; border: 1px solid #30363d;" id="konkurs1-status">
+                Qatnashuvchilar: <span id="konkurs1-count" style="color: #ffaa00;">0</span> / <span id="konkurs1-max">0</span>
             </div>
         </div>
 
-        <div id="konkurs-msg-box" style="display: none; background: #161b22; border: 2px solid #ff0000; margin: 0 20px 20px 20px; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);">
-            <h4 style="color: #ff4d4d; margin-bottom: 5px; font-size: 15px;"><i class="fa-solid fa-bell"></i> Muhim Xabar</h4>
-            <p id="konkurs-msg-text" style="font-size: 13px; color: #fff; line-height: 1.4; white-space: pre-wrap;"></p>
+        <div id="konkurs1-msg-box" style="display: none; background: #161b22; border: 2px solid #ff0000; margin: -10px 20px 20px 20px; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);">
+            <h4 style="color: #ff4d4d; margin-bottom: 5px; font-size: 15px;"><i class="fa-solid fa-bell"></i> Muhim Xabar (1)</h4>
+            <p id="konkurs1-msg-text" style="font-size: 13px; color: #fff; line-height: 1.4; white-space: pre-wrap;"></p>
+        </div>
+
+        <div style="background: #161b22; border: 2px solid #3498db; margin: 10px 20px 20px 20px; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 0 15px rgba(52, 152, 219, 0.2); position: relative; z-index: 100;">
+            <h3 id="konkurs2-main-title" style="color: #3498db; margin-bottom: 5px; font-size: 18px;">🎁 2-Konkurs: Tekin UC</h3>
+            <p id="konkurs2-channel-name" style="font-size: 13px; color: #8b949e; margin-bottom: 12px;">Yuklanmoqda...</p>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button class="task-go-btn" id="konkurs2-obuna-btn" style="flex: 1; background-color: #e74c3c; padding: 12px 0; font-size: 14px;" onclick="goToKonkurs(2)">🔴 Obuna bo'lish</button>
+                <button class="task-go-btn" id="konkurs2-check-btn" style="flex: 1; background-color: #2ea043; padding: 12px 0; font-size: 14px;" onclick="checkKonkurs(2)">✅ Tekshirish</button>
+            </div>
+            <div style="background: #0d1117; padding: 10px; border-radius: 8px; font-weight: bold; color: #fff; border: 1px solid #30363d;" id="konkurs2-status">
+                Qatnashuvchilar: <span id="konkurs2-count" style="color: #3498db;">0</span> / <span id="konkurs2-max">0</span>
+            </div>
+        </div>
+
+        <div id="konkurs2-msg-box" style="display: none; background: #161b22; border: 2px solid #ff0000; margin: -10px 20px 20px 20px; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);">
+            <h4 style="color: #ff4d4d; margin-bottom: 5px; font-size: 15px;"><i class="fa-solid fa-bell"></i> Muhim Xabar (2)</h4>
+            <p id="konkurs2-msg-text" style="font-size: 13px; color: #fff; line-height: 1.4; white-space: pre-wrap;"></p>
         </div>
     </div>
 
@@ -205,8 +257,13 @@
         <div class="page-header" style="border: none; padding-bottom: 0;">
             <div style="font-size: 60px; margin-bottom: 10px;">🤝</div>
             <h2>Do'stlaringizni taklif qiling!</h2>
-            <p>Do'stlar to'plab, tekinga o'yin valyutasini oling!</p>
         </div>
+        
+        <div style="background: #161b22; margin: 10px 20px; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #30363d;">
+            <p style="color: #8b949e; font-size: 14px;">Sizning taklif qilgan do'stlaringiz:</p>
+            <h1 style="color: #2ea043; font-size: 40px; margin-top: 5px;" id="my-friends-count">0</h1>
+        </div>
+
         <button class="invite-btn" onclick="copyRefLink()">📲 Havolani ulashish</button>
         <div class="ref-rule">
             ⚠️ <b>QOIDA:</b> Firibgarlikni oldini olish uchun yutuq olishda hisobingizda kamida <b>10,000,000 Loot</b> bo'lishi shart! (Lootingiz yechilmaydi)
@@ -223,8 +280,14 @@
             <button class="submit-btn" onclick="requestRefWithdraw()">Tasdiqlash</button>
         </div>
 
-        <div class="section-title" style="text-align: center; margin-top: 30px;">🏆 Do'stlar Reytingi (Top 100)</div>
-        <div class="rank-list" id="ref-rating-list" style="padding: 0 20px; padding-bottom: 20px;"></div>
+        <div class="section-title">🤝 DO'STLARGA O'TKAZMA (3 KUNDA 1 MARTA)</div>
+        <div class="transfer-box">
+            <div class="transfer-my-id">Sizning ID raqamingiz: <span id="transfer-id-display">123456</span></div>
+            <div class="input-group"><input type="number" placeholder="Do'stingizning ID raqami" id="transfer-to-id"></div>
+            <div class="input-group"><input type="number" placeholder="Miqdor (100k dan 500k gacha)" id="transfer-amount"></div>
+            <button class="submit-btn" onclick="sendTransfer()">💸 Jo'natish</button>
+            <p style="font-size: 11px; color: #e74c3c; text-align: center; margin-top: 10px;">⚠️ Diqqat: O'tkazmalar kuzatiladi. Nakrutka qilgan akkauntlar bloklanadi!</p>
+        </div>
     </div>
 
     <div id="tab-tasks" class="app-tab">
@@ -234,129 +297,103 @@
         </div>
         <div class="section-title">Maxsus Topshiriqlar</div>
         <div id="tasks-container">
+            
             <div class="task-card" id="task-kattahomiy" style="border: 2px solid #ff0000; background: linear-gradient(145deg, #161b22 0%, rgba(255, 0, 0, 0.1) 100%);">
                <div class="task-left">
-                   <div class="task-icon-circle" style="background: #ff0000; color: #ffffff; box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);"><i class="fa-brands fa-youtube"></i></div>
-                   <div class="task-info">
-                       <div class="task-text">
-                           <h4 style="color: #ff4d4d; font-weight: 900; font-size: 16px; letter-spacing: 0.5px;">👑 KATTA HOMIY</h4>
-                           <p style="color: #ffd700; font-size: 14px; text-shadow: 0 0 5px rgba(255, 215, 0, 0.4);">+1,500,000 loot</p>
-                       </div>
-                   </div>
+                   <div class="task-icon-circle" style="background: #ff0000;"><i class="fa-brands fa-youtube"></i></div>
+                   <div class="task-info"><h4>👑 KATTA HOMIY</h4><p>+1,500,000 loot</p></div>
                </div>
                <div style="display: flex; flex-direction: column; gap: 5px;">
-                   <button class="task-go-btn" style="width: 90px; background-color: #ff0000; box-shadow: 0 4px 10px rgba(255, 0, 0, 0.4);" onclick="goToTask('kattahomiy', 'https://youtube.com/@ali_vortex07?si=C1KK4uZWDuxQYoir')">Obuna</button>
-                   <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-kattahomiy-btn" onclick="checkTask('kattahomiy', 1500000)">Tekshirish</button>
+                   <button class="task-go-btn" style="width: 90px; background-color: #ff0000;" onclick="goToTask('kattahomiy', 'https://youtube.com/@ali_vortex07')">Obuna</button>
+                   <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-kattahomiy-btn" onclick="checkTaskAPI('kattahomiy')">Tekshirish</button>
                </div>
-            </div>
-            
-            <div class="task-card" id="task-FROZIX_SALE">
-                <div class="task-left">
-                    <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>FROZIX_SALE 1000 ta qilamiz va keyingisida uc qilamiz</h4><p>+2,500,000 loot</p></div></div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('FROZIX_SALE', 'https://t.me/FROZIX_SALE')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-FROZIX_SALE-btn" onclick="checkTask('FROZIX_SALE', 1500000)">Tekshirish</button>
-                </div>
             </div>
             
             <div class="task-card" id="task-xalilovsales">
                 <div class="task-left">
                     <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>xalilov sales (TG)</h4><p>+1,500,000 loot</p></div></div>
+                    <div class="task-info"><h4>xalilov sales</h4><p>+500,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('xalilovsales', 'https://t.me/xalilovsales')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-xalilovsales-btn" onclick="checkTask('xalilovsales', 1500000)">Tekshirish</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-xalilovsales-btn" onclick="checkTaskAPI('xalilovsales')">Tekshirish</button>
                 </div>
             </div>
-            
+
             <div class="task-card" id="task-ibodmarket">
                 <div class="task-left">
                     <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>IBOD MARKET (TG)</h4><p>+60,000 loot</p></div></div>
+                    <div class="task-info"><h4>IBOD MARKET</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('ibodmarket', 'https://t.me/ibodmarket')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodmarket-btn" onclick="checkTask('ibodmarket', 60000)">Tekshirish</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodmarket-btn" onclick="checkTaskAPI('ibodmarket')">Tekshirish</button>
                 </div>
             </div>
 
             <div class="task-card" id="task-iboduc">
                 <div class="task-left">
                     <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>IBOD UC SERVICE (TG)</h4><p>+60,000 loot</p></div></div>
+                    <div class="task-info"><h4>IBOD UC SERVICE</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('iboduc', 'https://t.me/iboduc_service')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-iboduc-btn" onclick="checkTask('iboduc', 60000)">Tekshirish</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-iboduc-btn" onclick="checkTaskAPI('iboduc')">Tekshirish</button>
                 </div>
             </div>
 
             <div class="task-card" id="task-ibodtour">
                 <div class="task-left">
                     <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>IBOD TOURNAMENT (TG)</h4><p>+60,000 loot</p></div></div>
+                    <div class="task-info"><h4>IBOD TOURNAMENT</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('ibodtour', 'https://t.me/ibod_tournament')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodtour-btn" onclick="checkTask('ibodtour', 60000)">Tekshirish</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodtour-btn" onclick="checkTaskAPI('ibodtour')">Tekshirish</button>
                 </div>
             </div>
 
             <div class="task-card" id="task-ibodmashka">
                 <div class="task-left">
                     <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>IBOD MASHKA (TG)</h4><p>+60,000 loot</p></div></div>
+                    <div class="task-info"><h4>IBOD MASHKA</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('ibodmashka', 'https://t.me/ibodmashka_pubg')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodmashka-btn" onclick="checkTask('ibodmashka', 60000)">Tekshirish</button>
-                </div>
-            </div>
-
-            <div class="task-card" id="task-ytibodmash">
-                <div class="task-left">
-                    <div class="task-icon-circle" style="background: rgba(255,0,0,0.1); color: #ff0000;"><i class="fa-brands fa-youtube"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>IBOD MASHENKA (YT)</h4><p>+60,000 loot</p></div></div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <button class="task-go-btn" style="width: 90px; background-color: #ff0000;" onclick="goToTask('ytibodmash', 'https://youtube.com/@ibodmashkapubgm?si=EbTppdqyNQu2KBp9')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ytibodmash-btn" onclick="checkTask('ytibodmash', 60000)">Tekshirish</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodmashka-btn" onclick="checkTaskAPI('ibodmashka')">Tekshirish</button>
                 </div>
             </div>
 
             <div class="task-card" id="task-ytibodtap">
                 <div class="task-left">
                     <div class="task-icon-circle" style="background: rgba(255,0,0,0.1); color: #ff0000;"><i class="fa-brands fa-youtube"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>IBOD TAP (YT)</h4><p>+60,000 loot</p></div></div>
+                    <div class="task-info"><h4>IBOD TAP (YT)</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <button class="task-go-btn" style="width: 90px; background-color: #ff0000;" onclick="goToTask('ytibodtap', 'https://youtube.com/@ibodtap?si=c-X79pYo5t83xx_r')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ytibodtap-btn" onclick="checkTask('ytibodtap', 60000)">Tekshirish</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #ff0000;" onclick="goToTask('ytibodtap', 'https://youtube.com/@ibodtap')">Obuna</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ytibodtap-btn" onclick="checkTaskAPI('ytibodtap')">Tekshirish</button>
                 </div>
             </div>
 
             <div class="task-card" id="task-insibodmash">
                 <div class="task-left">
                     <div class="task-icon-circle" style="background: rgba(225,48,108,0.1); color: #E1306C;"><i class="fa-brands fa-instagram"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>IBOD MASHENKA (INS)</h4><p>+60,000 loot</p></div></div>
+                    <div class="task-info"><h4>IBOD MASHENKA (INS)</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <button class="task-go-btn" style="width: 90px; background-color: #E1306C;" onclick="goToTask('insibodmash', 'https://www.instagram.com/ibodmashennik')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-insibodmash-btn" onclick="checkTask('insibodmash', 60000)">Tekshirish</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-insibodmash-btn" onclick="checkTaskAPI('insibodmash')">Tekshirish</button>
                 </div>
             </div>
 
             <div class="task-card" id="task-insibodmarket">
                 <div class="task-left">
                     <div class="task-icon-circle" style="background: rgba(225,48,108,0.1); color: #E1306C;"><i class="fa-brands fa-instagram"></i></div>
-                    <div class="task-info"><div class="task-text"><h4>IBOD MARKET (INS)</h4><p>+60,000 loot</p></div></div>
+                    <div class="task-info"><h4>IBOD MARKET (INS)</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <button class="task-go-btn" style="width: 90px; background-color: #E1306C;" onclick="goToTask('insibodmarket', 'https://www.instagram.com/ibod_market')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-insibodmarket-btn" onclick="checkTask('insibodmarket', 60000)">Tekshirish</button>
+                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-insibodmarket-btn" onclick="checkTaskAPI('insibodmarket')">Tekshirish</button>
                 </div>
             </div>
         </div>
@@ -372,25 +409,25 @@
         
         <div class="uc-form">
             <div class="uc-options">
-                <div class="uc-box active" onclick="selectItem(this, 6000000, 'uc')">
+                <div class="uc-box active" onclick="selectItem(this, 6000000, '60 UC')">
                     <div class="pkg-tier">Starter <span></span></div>
                     <div class="pkg-amount">60 UC</div>
                     <div class="pkg-cost">6 mln loot</div>
                     <div class="active-check"><i class="fa-solid fa-check"></i></div>
                 </div>
-                <div class="uc-box" onclick="selectItem(this, 12000000, 'uc')">
+                <div class="uc-box" onclick="selectItem(this, 12000000, '130 UC')">
                     <div class="pkg-tier">Popular <span>🔥</span></div>
                     <div class="pkg-amount">130 UC</div>
                     <div class="pkg-cost">12 mln loot</div>
                     <div class="active-check"><i class="fa-solid fa-check"></i></div>
                 </div>
-                <div class="uc-box" onclick="selectItem(this, 30000000, 'uc')">
+                <div class="uc-box" onclick="selectItem(this, 30000000, '325 UC')">
                     <div class="pkg-tier">Pro <span></span></div>
                     <div class="pkg-amount">325 UC</div>
                     <div class="pkg-cost">30 mln loot</div>
                     <div class="active-check"><i class="fa-solid fa-check"></i></div>
                 </div>
-                <div class="uc-box" onclick="selectItem(this, 60000000, 'uc')">
+                <div class="uc-box" onclick="selectItem(this, 60000000, '660 UC')">
                     <div class="pkg-tier">Elite <span>👑</span></div>
                     <div class="pkg-amount">660 UC</div>
                     <div class="pkg-cost">60 mln loot</div>
@@ -399,7 +436,8 @@
             </div>
             <div class="input-group"><input type="number" placeholder="PUBG ID" id="uc-id"></div>
             <div class="input-group"><input type="text" placeholder="PUBG NIK" id="uc-nick"></div>
-            <button class="submit-btn" onclick="requestWithdraw()">Tasdiqlash</button>
+            <div class="input-group"><input type="text" placeholder="Siz bilan aloqa uchun (Telegram yoki Tel raqam)" id="uc-contact"></div>
+            <button class="submit-btn" onclick="requestApiWithdraw()">Tasdiqlash</button>
         </div>
     </div>
 
@@ -469,31 +507,8 @@
     <div id="toastNotification" class="toast-notification"></div>
 
     <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        let userId = urlParams.get('userid') || tg.initDataUnsafe?.user?.id || "123456";
-        let userName = tg.initDataUnsafe?.user?.first_name || "O'yinchi";
-
-        // --- QOROVUL TIZIMI (ESKI TUGMADAN KIRGANLAR UCHUN) ---
-        async function checkAccess() {
-            try {
-                let response = await fetch(`http://212.43.146.114:10000/check_access?userid=${userId}`);
-                let result = await response.json();
-                if (!result.subscribed) {
-                    document.body.innerHTML = `
-                        <div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#0d1117; padding:20px; text-align:center;'>
-                            <div style='font-size: 60px; margin-bottom: 20px;'>🚧</div>
-                            <h2 style='color:#e74c3c; margin-bottom:15px;'>KIRISH TAQIQLANGAN!</h2>
-                            <p style='color:#8b949e; font-size:15px;'>Siz barcha majburiy kanallarga obuna bo'lmagansiz yoki botni qayta ishga tushirishingiz kerak.</p>
-                            <button onclick='tg.close()' style='margin-top: 30px; background:#2ea043; color:white; border:none; padding:15px 30px; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;'>Botga qaytish</button>
-                        </div>`;
-                }
-            } catch(e) { console.log("Qorovul xatosi:", e); }
-        }
-        checkAccess();
-        // -------------------------------------------------------
+        document.getElementById('username_display').innerText = userName;
+        document.getElementById('transfer-id-display').innerText = userId; // Transfer ID kiritildi
 
         let savedScore = parseInt(localStorage.getItem('ghost_score_' + userId));
         let urlScore = parseInt(urlParams.get('score'));
@@ -520,6 +535,7 @@
         let savedRefs = parseInt(localStorage.getItem('ghost_refs_' + userId)) || 0;
 
         let refs = Math.max(urlRefs, savedRefs); 
+        document.getElementById('my-friends-count').innerText = refs; // Do'stlar sonini ekranga yozish
         
         let userUpgrades = {
             tap: Math.max(urlTap, savedTap),
@@ -585,8 +601,6 @@
 
         setInterval(() => { ghostSave(); }, 2000);
 
-        document.getElementById('username').innerText = userName;
-
         function updateScoreDisplays() {
             let formatted = score.toLocaleString();
             scoreEl.innerText = formatted;
@@ -604,37 +618,47 @@
         limitTextEl.innerText = dailyLimit.toLocaleString();
         updateEnergyUI();
 
-        let taskClickTimes = {};
-
+        // ======= VAZIFALAR API (Anti-Nakrutka) =======
         function goToTask(taskId, url) {
-            taskClickTimes[taskId] = Date.now();
             if(tg && tg.openLink) { tg.openLink(url); } else { window.open(url, '_blank'); }
         }
 
-        function checkTask(taskId, rewardAmount) {
+        async function checkTaskAPI(taskId) {
             if(localStorage.getItem('task_done_' + taskId)) {
                 showToast("Siz bu vazifani allaqachon bajargansiz! ⚠️");
                 return;
             }
 
-            if(!taskClickTimes[taskId]) {
-                showToast("❌ Avval 'Obuna bo'lish' tugmasini bosing!");
-                return;
-            }
-
             let btn = document.getElementById('check-' + taskId + '-btn');
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> Bajarildi';
-            btn.style.backgroundColor = '#2ea043';
-            btn.style.color = '#fff';
+            let originalText = btn.innerText;
+            btn.innerText = "Kuting...";
             btn.disabled = true;
 
-            score = (parseInt(score) || 0) + rewardAmount;
-            updateScoreDisplays();
-            ghostSave();
-            localStorage.setItem('task_done_' + taskId, 'true'); 
-            
-            showToast(`Vazifa bajarildi! +${rewardAmount.toLocaleString()} loot ✅`);
-            setTimeout(() => { moveTaskToBottom(taskId); }, 500);
+            try {
+                let response = await fetch(`http://212.43.146.114:10000/verify_task?userid=${userId}&task_id=${taskId}`);
+                let result = await response.json();
+                
+                if (result.success) {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Bajarildi';
+                    btn.style.backgroundColor = '#2ea043';
+                    btn.style.color = '#fff';
+                    
+                    score += result.reward;
+                    updateScoreDisplays();
+                    ghostSave();
+                    localStorage.setItem('task_done_' + taskId, 'true'); 
+                    showToast(`Vazifa bajarildi! +${result.reward.toLocaleString()} loot ✅`);
+                    setTimeout(() => { moveTaskToBottom(taskId); }, 500);
+                } else {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    showToast(`❌ Xato: ${result.msg}`);
+                }
+            } catch(e) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                showToast("Server bilan ulanishda xato!");
+            }
         }
 
         function moveTaskToBottom(taskId) {
@@ -644,7 +668,7 @@
         }
 
         function initTasks() {
-            ['special', 'kattahomiy', 'xalilovsales', 'ibodmarket', 'iboduc', 'ibodtour', 'ibodmashka', 'ytibodmash', 'ytibodtap', 'insibodmash', 'insibodmarket'].forEach(taskId => {
+            ['kattahomiy', 'xalilovsales', 'ibodmarket', 'iboduc', 'ibodtour', 'ibodmashka', 'ytibodtap', 'insibodmash', 'insibodmarket'].forEach(taskId => {
                 if(localStorage.getItem('task_done_' + taskId)) {
                     let btn = document.getElementById('check-' + taskId + '-btn');
                     if(btn) {
@@ -658,84 +682,60 @@
             });
         }
         initTasks();
+        // ===========================================
 
-        function goToKonkurs() {
-            let url = document.getElementById('konkurs-obuna-btn').getAttribute('data-link') || "https://t.me/xalilovsales";
-            if(tg && tg.openLink) { tg.openLink(url); } else { window.open(url, '_blank'); }
+        function goToKonkurs(k_id) {
+            let url = document.getElementById(`konkurs${k_id}-obuna-btn`).getAttribute('data-link');
+            if(url) {
+                if(tg && tg.openLink) { tg.openLink(url); } else { window.open(url, '_blank'); }
+            }
         }
 
-        function checkKonkurs() {
+        function checkKonkurs(k_id) {
             let botUsername = "IbodTapBot"; // BOTINGIZ NOMI
-            let url = `https://t.me/${botUsername}?start=konkurs_xalilov`;
+            let url = `https://t.me/${botUsername}?start=konkurs${k_id}`;
             window.Telegram.WebApp.openTelegramLink(url);
-            showToast("Tekshirilmoqda, botga qayting! 🔄");
+            showToast(`Tekshirilmoqda (${k_id}), botga qayting! 🔄`);
         }
 
-        async function loadKonkursCount() {
+        async function updateSingleKonkurs(k_id) {
             try {
-                const response = await fetch('https://api.allorigins.win/raw?url=http://212.43.146.114:10000/konkurs.json&t=' + new Date().getTime()); 
+                const response = await fetch(`http://212.43.146.114:10000/konkurs${k_id}.json?t=` + new Date().getTime()); 
                 const data = await response.json();
                 
-                let countEl = document.getElementById('konkurs-count');
-                let maxEl = document.getElementById('konkurs-max');
+                let countEl = document.getElementById(`konkurs${k_id}-count`);
+                let maxEl = document.getElementById(`konkurs${k_id}-max`);
                 
                 if(data && typeof data.count !== 'undefined') {
                     countEl.innerText = data.count;
-                    
                     let maxU = data.max_users || 1200;
                     maxEl.innerText = maxU;
                     
-                    if(data.title) {
-                        document.getElementById('konkurs-main-title').innerText = data.title;
-                    }
-
+                    if(data.title) { document.getElementById(`konkurs${k_id}-main-title`).innerText = data.title; }
                     if(data.channel) {
-                        document.getElementById('konkurs-channel-name').innerText = data.channel + " shu kanalga obuna bo'lasiz";
-                        document.getElementById('konkurs-obuna-btn').setAttribute('data-link', data.link);
+                        document.getElementById(`konkurs${k_id}-channel-name`).innerText = data.channel + " shu kanalga obuna bo'lasiz";
+                        document.getElementById(`konkurs${k_id}-obuna-btn`).setAttribute('data-link', data.link);
                     }
-
                     if(data.message && data.message.trim() !== "") {
-                        document.getElementById('konkurs-msg-box').style.display = 'block';
-                        document.getElementById('konkurs-msg-text').innerText = data.message;
-                    } else {
-                        document.getElementById('konkurs-msg-box').style.display = 'none';
-                    }
+                        document.getElementById(`konkurs${k_id}-msg-box`).style.display = 'block';
+                        document.getElementById(`konkurs${k_id}-msg-text`).innerText = data.message;
+                    } else { document.getElementById(`konkurs${k_id}-msg-box`).style.display = 'none'; }
 
                     if(data.count >= maxU) {
-                        document.getElementById('konkurs-status').innerHTML = '<span style="color:#e74c3c;">Konkurs yakunlandi! 🛑</span>';
-                        document.getElementById('konkurs-check-btn').disabled = true;
-                        document.getElementById('konkurs-check-btn').style.backgroundColor = '#30363d';
+                        document.getElementById(`konkurs${k_id}-status`).innerHTML = `<span style="color:#e74c3c;">Konkurs yakunlandi! 🛑</span>`;
+                        document.getElementById(`konkurs${k_id}-check-btn`).disabled = true;
+                        document.getElementById(`konkurs${k_id}-check-btn`).style.backgroundColor = '#30363d';
                     }
-                } else { countEl.innerText = "0"; }
-            } catch (err) { 
-                document.getElementById('konkurs-count').innerText = "0";
-            }
+                }
+            } catch (err) {}
+        }
+
+        function loadKonkursCount() {
+            updateSingleKonkurs(1);
+            updateSingleKonkurs(2);
         }
         loadKonkursCount();
         setInterval(loadKonkursCount, 10000);
-
-        async function loadRefLeaderboard() {
-            try {
-                const response = await fetch('https://api.allorigins.win/raw?url=http://212.43.146.114:10000/ref_rating.json&t=' + new Date().getTime()); 
-                const refs = await response.json();
-                const refRankList = document.getElementById('ref-rating-list');
-                if (refRankList) {
-                    refRankList.innerHTML = ''; 
-                    if(refs.length === 0) {
-                        refRankList.innerHTML = "<p style='text-align:center; color:#8b949e;'>Hozircha hech kim do'st taklif qilmadi.</p>";
-                        return;
-                    }
-                    refs.forEach((user, index) => {
-                        let rankIcon = index + 1, medalClass = "";
-                        if (index === 0) { rankIcon = "🥇"; medalClass = " gold"; } else if (index === 1) { rankIcon = "🥈"; medalClass = " silver"; } else if (index === 2) { rankIcon = "🥉"; medalClass = " bronze"; }
-                        let firstLetter = user.username && user.username !== "Unknown" ? user.username.charAt(0).toUpperCase() : "U";
-                        refRankList.innerHTML += `<div class="rank-item"><div class="rank-number${medalClass}" style="width: 40px;">${rankIcon}</div><div class="rank-avatar">${firstLetter}</div><div class="rank-details"><div class="rank-name">${user.username}</div><div class="rank-score" style="color:#ffd700;">👥 ${user.refs} ta do'st</div></div></div>`;
-                    });
-                }
-            } catch (err) { console.error("Do'stlar reytingi yuklanmadi"); }
-        }
-        setInterval(() => { if (document.getElementById('tab-friends').classList.contains('active')) loadRefLeaderboard(); }, 5000);
-        loadRefLeaderboard();
 
         function renderShop() {
             let tLvl = userUpgrades.tap, tBadge = `Lvl ${tLvl + 1}`;
@@ -787,25 +787,56 @@
         }
 
         let selectedItemPrice = 6000000;
-        function selectItem(element, price) {
+        let selectedItemAmount = '60 UC';
+        function selectItem(element, price, amountStr) {
             let parent = element.parentElement;
             parent.querySelectorAll('.uc-box').forEach(box => box.classList.remove('active'));
             element.classList.add('active');
             selectedItemPrice = price;
+            selectedItemAmount = amountStr;
         }
 
-        function requestWithdraw() {
-            let id = document.getElementById('uc-id').value, nick = document.getElementById('uc-nick').value;
-            if (id === "" || nick === "") return showToast("PUBG ID va NIK ni kiriting! ⚠️");
+        // ======= API ORQALI DO'KONDAN XARID QILISH =======
+        async function requestApiWithdraw() {
+            let id = document.getElementById('uc-id').value, nick = document.getElementById('uc-nick').value, contact = document.getElementById('uc-contact').value;
+            if (id === "" || nick === "" || contact === "") return showToast("Barcha maydonlarni to'ldiring! ⚠️");
             
             if (score >= selectedItemPrice) {
-                score -= selectedItemPrice; updateScoreDisplays(); ghostSave();
-                let safeNick = nick.replace(/[^a-zA-Z0-9]/g, ''); if (safeNick === "") safeNick = "Nomsiz";
-                let botUsername = "IbodTapBot"; // O'ZINGIZNING BOTINGIZ
-                let url = `https://t.me/${botUsername}?start=withdraw_uc_${selectedItemPrice}_${score}_${id}_${safeNick}`;
-                window.Telegram.WebApp.openTelegramLink(url);
-                showToast("Xarid qabul qilindi! 🔄");
+                try {
+                    let response = await fetch(`http://212.43.146.114:10000/buy_uc?userid=${userId}&price=${selectedItemPrice}&uc_amount=${selectedItemAmount}&pubg_id=${id}&pubg_nick=${nick}&contact=${contact}`);
+                    let result = await response.json();
+                    
+                    if (result.success) {
+                        score -= selectedItemPrice; updateScoreDisplays(); ghostSave();
+                        // Katta Oyna Chiqarish
+                        document.body.innerHTML += `<div id="shop-alert" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;justify-content:center;align-items:center;padding:20px;text-align:center;"><div style="background:#161b22;padding:30px;border-radius:15px;border:2px solid #e74c3c;"><h2 style="color:#e74c3c; margin-bottom:15px;">DIQQAT! ⚠️</h2><p style="color:#fff; font-size:16px; margin-bottom:20px;">So'rovingiz adminga ketdi.<br><br>Endi o'yindan chiqib, ekran zapisini tezkor <b>@sherbeklichbot</b> ga yuboring!</p><button onclick="tg.close()" style="background:#2ea043;padding:12px 25px;border:none;border-radius:10px;color:white;font-weight:bold;font-size:16px;cursor:pointer;">Tushundim yopish</button></div></div>`;
+                    } else {
+                        showToast(`❌ Xato: ${result.msg}`);
+                    }
+                } catch(e) { showToast("Serverda xatolik!"); }
             } else { showToast("Hisobingizda yetarli loot mavjud emas! ❌"); }
+        }
+
+        // ======= P2P O'TKAZMA (API) =======
+        async function sendTransfer() {
+            let toId = document.getElementById('transfer-to-id').value;
+            let amount = document.getElementById('transfer-amount').value;
+            
+            if (toId === "" || amount === "") return showToast("Barcha maydonlarni to'ldiring!");
+            
+            try {
+                let response = await fetch(`http://212.43.146.114:10000/transfer_loot?from_user=${userId}&to_user=${toId}&amount=${amount}`);
+                let result = await response.json();
+                
+                if (result.success) {
+                    score -= parseInt(amount); updateScoreDisplays(); ghostSave();
+                    showToast(`✅ Muvaqqiyatli! Do'stingizga ${amount} loot o'tkazildi!`);
+                    document.getElementById('transfer-to-id').value = "";
+                    document.getElementById('transfer-amount').value = "";
+                } else {
+                    showToast(`❌ Xato: ${result.msg}`);
+                }
+            } catch(e) { showToast("Serverda xatolik yuz berdi!"); }
         }
 
         let selectedRefCost = {cost: 60, name: "60 UC"};
@@ -847,8 +878,10 @@
                 ghostSave();
                 let touchX = e.clientX || (e.touches && e.touches[0].clientX), touchY = e.clientY || (e.touches && e.touches[0].clientY);
                 if(!touchX) { const rect = tapBtn.getBoundingClientRect(); touchX = rect.left + rect.width / 2; touchY = rect.top + rect.height / 2; }
+                
+                // Animatsiyani oldinga chiqarish
                 const floatNum = document.createElement('div'); floatNum.className = 'floating-number'; floatNum.innerText = '+' + tapPower; floatNum.style.left = `${touchX - 10}px`; floatNum.style.top = `${touchY - 20}px`;
-                document.getElementById('screenTap').appendChild(floatNum); setTimeout(() => { floatNum.remove(); }, 1000);
+                document.body.appendChild(floatNum); setTimeout(() => { floatNum.remove(); }, 1000);
                 if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             }
         }
