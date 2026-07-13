@@ -722,24 +722,26 @@
         }
 
         // ======= API ORQALI DO'KONDAN XARID QILISH =======
-        async function requestApiWithdraw() {
-            let id = document.getElementById('uc-id').value, nick = document.getElementById('uc-nick').value, contact = document.getElementById('uc-contact').value;
-            if (id === "" || nick === "" || contact === "") return showToast("Barcha maydonlarni to'ldiring! ⚠️");
+        async function sendTransfer() {
+            let toId = document.getElementById('transfer-to-id').value;
+            let amount = document.getElementById('transfer-amount').value;
             
-            if (score >= selectedItemPrice) {
-                try {
-                    let response = await fetch(`http://212.43.146.114:10000/buy_uc?userid=${userId}&price=${selectedItemPrice}&uc_amount=${selectedItemAmount}&pubg_id=${id}&pubg_nick=${nick}&contact=${contact}`);
-                    let result = await response.json();
-                    
-                    if (result.success) {
-                        score -= selectedItemPrice; updateScoreDisplays(); ghostSave();
-                        // Katta Oyna Chiqarish
-                        document.body.innerHTML += `<div id="shop-alert" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;justify-content:center;align-items:center;padding:20px;text-align:center;"><div style="background:#161b22;padding:30px;border-radius:15px;border:2px solid #e74c3c;"><h2 style="color:#e74c3c; margin-bottom:15px;">DIQQAT! ⚠️</h2><p style="color:#fff; font-size:16px; margin-bottom:20px;">So'rovingiz adminga ketdi.<br><br>Endi o'yindan chiqib, ekran zapisini tezkor <b>@sherbeklichbot</b> ga yuboring!</p><button onclick="tg.close()" style="background:#2ea043;padding:12px 25px;border:none;border-radius:10px;color:white;font-weight:bold;font-size:16px;cursor:pointer;">Tushundim yopish</button></div></div>`;
-                    } else {
-                        showToast(`❌ Xato: ${result.msg}`);
-                    }
-                } catch(e) { showToast("Serverda xatolik!"); }
-            } else { showToast("Hisobingizda yetarli loot mavjud emas! ❌"); }
+            if (toId === "" || amount === "") return showToast("Barcha maydonlarni to'ldiring!");
+            
+            try {
+                let targetUrl = `http://212.43.146.114:10000/transfer_loot?from_user=${userId}&to_user=${toId}&amount=${amount}&t=${Date.now()}`;
+                let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                let result = await response.json();
+                
+                if (result.success) {
+                    score -= parseInt(amount); updateScoreDisplays(); ghostSave();
+                    showToast(`✅ Muvaqqiyatli! Do'stingizga ${amount} loot o'tkazildi!`);
+                    document.getElementById('transfer-to-id').value = "";
+                    document.getElementById('transfer-amount').value = "";
+                } else {
+                    showToast(`❌ Xato: ${result.msg}`);
+                }
+            } catch(e) { showToast("Serverda xatolik yuz berdi!"); }
         }
 
         // ======= P2P O'TKAZMA (API) =======
