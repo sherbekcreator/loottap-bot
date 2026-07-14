@@ -466,7 +466,7 @@
         async function fetchUserTasksFromServer() {
             try {
                 let targetUrl = `http://212.43.146.114:10000/get_user_tasks?userid=${userId}&t=${Date.now()}`;
-                let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                let response = await fetch(targetUrl);
                 let result = await response.json();
                 if(result.success && result.tasks) {
                     result.tasks.forEach(tId => {
@@ -560,7 +560,7 @@
         async function fetchNewsFromServer() {
             try {
                 let targetUrl = `http://212.43.146.114:10000/get_news?t=${Date.now()}`;
-                let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                let response = await fetch(targetUrl);
                 let result = await response.json();
                 if(result.success && result.news.length > 0) {
                     document.getElementById('news-badge').style.display = 'flex';
@@ -599,7 +599,7 @@
 
             try {
                 let targetUrl = `http://212.43.146.114:10000/verify_task?userid=${userId}&task_id=${taskId}&t=${Date.now()}`;
-                let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                let response = await fetch(targetUrl);
                 let result = await response.json();
                 
                 if (result.success) {
@@ -622,7 +622,7 @@
 
         async function updateSingleKonkurs(k_id) {
             try {
-                let response = await fetch(`http://212.43.146.114:10000/konkurs${k_id}.json?t=${Date.now()}`); 
+                const response = await fetch('http://212.43.146.114:10000/konkurs' + k_id + '.json?t=' + Date.now()); 
                 let data = await response.json();
                 if(data && typeof data.count !== 'undefined') {
                     document.getElementById(`konkurs${k_id}-count`).innerText = data.count;
@@ -652,7 +652,7 @@
             if (score >= selectedItemPrice) {
                 try {
                     let targetUrl = `http://212.43.146.114:10000/buy_uc?userid=${userId}&price=${selectedItemPrice}&uc_amount=${selectedItemAmount}&pubg_id=${id}&pubg_nick=${nick}&contact=${contact}&t=${Date.now()}`;
-                    let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                    let response = await fetch(targetUrl);
                     let result = await response.json();
                     if (result.success) {
                         score -= selectedItemPrice; updateScoreDisplays(); ghostSave();
@@ -673,7 +673,7 @@
                 disp.style.color = "#8b949e"; disp.innerText = "Qidirilmoqda...";
                 try {
                     let url = `http://212.43.146.114:10000/get_name?target_id=${targetId}&t=${Date.now()}`;
-                    let res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                    let res = await fetch(url);
                     let data = await res.json();
                     if(data.success) { disp.style.color = "#2ea043"; disp.innerText = "👤 " + data.name; } 
                     else { disp.style.color = "#e74c3c"; disp.innerText = "O'yinchi topilmadi!"; }
@@ -688,7 +688,7 @@
             
             try {
                 let targetUrl = `http://212.43.146.114:10000/transfer_loot?from_user=${userId}&to_user=${toId}&amount=${amount}&t=${Date.now()}`;
-                let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                let response = await fetch(targetUrl);
                 let result = await response.json();
                 if (result.success) {
                     score -= parseInt(amount); updateScoreDisplays(); ghostSave();
