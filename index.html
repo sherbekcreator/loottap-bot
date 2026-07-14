@@ -7,7 +7,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0d1117; color: #ffffff; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
@@ -18,13 +19,13 @@
         .user-info { font-size: 14px; color: #8b949e; margin-bottom: 10px; font-weight: bold; }
         .balance-container { display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 36px; font-weight: bold; }
         
-        /* 3-rasm: Kichik PUBG UC rasmi uchun maxsus balans-icon */
+        /* Balans uchun maxsus kichik UC icon yoki tanga */
         .balance-icon { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .balance-icon img { width: 100%; height: 100%; object-fit: cover; }
         
         .daily-limit { font-size: 13px; color: #8b949e; margin-top: 8px; font-weight: 500; }
         
-        /* 8-rasm: Sariq qo'ng'iroqcha bildirishnomasi */
+        /* Sariq jozibador qo'ng'iroqcha tugmasi */
         .bell-icon { position: absolute; top: 22px; right: 25px; font-size: 25px; color: #ffd700; cursor: pointer; text-shadow: 0 0 12px rgba(255,215,0,0.6); }
         .bell-badge { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; font-size: 10px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #0d1117; }
         
@@ -40,7 +41,7 @@
         .side-tab.moved-left { right: auto; left: 0; border-radius: 0 8px 8px 0; border-left: none; border-right: 2px solid #2ea043; box-shadow: 3px 0 10px rgba(0,0,0,0.4); }
         .tab-text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 5px; }
         
-        /* Baraban CSS animatsiyasi */
+        /* Baraban va aylanma qismlari */
         .wheel-container { position: relative; width: 280px; height: 280px; flex-shrink: 0; margin-bottom: 15px; }
         .roulette-wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 20px rgba(46, 160, 67, 0.4); position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); transform: rotate(0deg); background: conic-gradient( #2ea043 0deg 45deg, #000 45deg 90deg, #fff 90deg 135deg, #000 135deg 180deg, #2ea043 180deg 225deg, #000 225deg 270deg, #fff 270deg 315deg, #000 315deg 360deg ); }
         .wheel-text-container { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
@@ -50,6 +51,7 @@
         
         .spin-btn-active { background-color: #388E3C; color: #ffffff; padding: 14px 30px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 10px; border: none; cursor: pointer; width: 85%; transition: 0.2s; }
         .spin-btn-disabled { background-color: #c4c4c4; color: #333333; padding: 14px 10px; border-radius: 12px; font-weight: bold; font-size: 15px; margin-top: 10px; border: none; width: 85%; }
+        .spin-note { font-size: 12px; color: #8b949e; margin-top: 12px; }
         
         .energy-wrapper { padding: 10px 20px 25px 20px; flex-shrink: 0; z-index: 50; position: relative; }
         .energy-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -60,10 +62,10 @@
         
         .page-header { text-align: center; padding: 20px; margin-bottom: 10px; }
         .page-header h2 { font-size: 20px; margin-bottom: 5px; }
+        .page-header p { font-size: 13px; color: #8b949e; }
         .section-title { font-size: 14px; font-weight: bold; margin: 15px 20px 10px 20px; color: #8b949e; text-transform: uppercase;}
         
-        /* VAZIFALAR / KARTALAR */
-        .task-card { background-color: #161b22; border-radius: 12px; padding: 15px; margin: 0 20px 12px 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d;}
+        .task-card { background-color: #161b22; border-radius: 12px; padding: 15px; margin: 0 20px 12px 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; transition: all 0.3s ease; }
         .task-left { display: flex; align-items: center; gap: 15px; }
         .task-icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; color: white; }
         .task-info h4 { font-size: 15px; margin-bottom: 4px; }
@@ -71,7 +73,9 @@
         .task-go-btn { padding: 8px 0; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: white; border: none; cursor: pointer; transition: 0.2s; font-weight: bold; font-size: 13px;}
         .task-go-btn:disabled { background-color: #30363d !important; color: #8b949e !important; cursor: not-allowed; }
         
-        .uc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; padding: 0 20px; }
+        .uc-form { padding: 0 20px; margin-top: 10px; }
+        .shop-section-title { font-size: 14px; color: #8b949e; margin-bottom: 12px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .uc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .uc-box { position: relative; background-color: #161b22; border: 2px solid #30363d; border-radius: 12px; padding: 15px 12px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; }
         .uc-box.active { border-color: #2ea043; background-color: rgba(46, 160, 67, 0.1); }
         .pkg-tier { font-size: 12px; color: #8b949e; font-weight: bold; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
@@ -80,25 +84,30 @@
         .active-check { position: absolute; bottom: 10px; right: 10px; width: 22px; height: 22px; background-color: #2ea043; border-radius: 50%; display: none; justify-content: center; align-items: center; color: #ffffff; font-size: 12px; font-weight: bold; }
         .uc-box.active .active-check { display: flex; }
         
-        .input-group { margin: 0 20px 15px 20px; }
+        .input-group { margin-bottom: 15px; }
         .input-group input { width: 100%; background-color: #161b22; border: 1px solid #30363d; color: white; padding: 15px; border-radius: 10px; font-size: 14px; outline: none; }
         .input-group input:focus { border-color: #2ea043; }
         
-        .submit-btn { width: calc(100% - 40px); background-color: #2ea043; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; border: none; margin: 10px 20px; cursor: pointer; transition: 0.2s; }
+        .submit-btn { width: 100%; background-color: #2ea043; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; border: none; margin-top: 10px; cursor: pointer; transition: 0.2s; }
         .submit-btn:active { transform: scale(0.98); }
         .red-btn { background-color: #e74c3c; color: white; border-radius: 12px; padding: 14px; margin: 0 20px 15px 20px; font-weight: bold; font-size: 15px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
         .invite-btn { background-color: #2ea043; color: white; border-radius: 12px; padding: 16px; margin: 10px 20px 10px 20px; font-weight: bold; font-size: 16px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); }
         .ref-rule { background-color: rgba(255, 215, 0, 0.1); border: 1px solid #ffaa00; padding: 10px; margin: 0 20px 15px 20px; border-radius: 8px; font-size: 12px; color: #ffd700; text-align: center; }
+        .ref-box { display: flex; justify-content: space-between; align-items: center; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; transition: 0.2s; cursor: pointer; }
+        .ref-box.active { border-color: #2ea043; background-color: rgba(46, 160, 67, 0.1); }
+        .ref-info h3 { font-size: 16px; color: white; }
+        .ref-info p { font-size: 12px; color: #8b949e; margin-top: 3px; }
+        .ref-cost { background-color: #2ea043; color: white; padding: 5px 10px; border-radius: 8px; font-weight: bold; font-size: 14px; }
         
-        /* 2-rasm: Shaffof va Toza Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background: rgba(13, 17, 23, 0.5); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 15px 10px 22px 10px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.06); }
+        /* Shaffof va Toza Bottom Nav - CSS Blur foni bilan (2-rasm) */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background: rgba(13, 17, 23, 0.45); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 15px 10px 22px 10px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.06); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #8b949e; font-size: 11px; cursor: pointer; width: 20%; gap: 6px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8); transition: 0.3s; }
         .nav-item.active { color: #2ea043; transform: translateY(-2px); }
         .nav-icon { font-size: 22px; }
 
         .toast-notification { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #2ea043; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 99999; transition: bottom 0.4s; white-space: nowrap; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         
-        /* 2-band: Sonlar qatlami eng oldinda! */
+        /* Sonlar qatlami eng oldinda! (z-index eng baland) */
         .floating-number { position: fixed; font-size: 28px; font-weight: bold; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.8); pointer-events: none; animation: floatUp 1s forwards; z-index: 999999; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
         
@@ -113,7 +122,7 @@
         .booster-info h4 { font-size: 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .lvl-badge { background-color: #2ea043; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
         
-        /* 8 va 9-rasm: Yangiliklar qo'ng'iroqcha oynasi (Chiroyli qizil ko'rinishda) */
+        /* 8 va 9-rasm: Jonli e'lonlar uchun uzun modal qizil ramkali chiroyli oyna */
         .news-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background-color: #161b22; border: 1px solid #30363d; border-radius: 16px; z-index: 5000; width: 90%; max-width: 350px; max-height: 60vh; padding: 20px; display: none; opacity: 0; transition: all 0.3s; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .news-modal.show { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
         .news-list { overflow-y: auto; flex-grow: 1; margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
@@ -122,7 +131,7 @@
         .news-date { color: #8b949e; font-size: 11px; margin-top: 8px; text-align: right; font-weight: 500; }
         .modal-close { background-color: #30363d; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
         
-        /* 4-band: O'tkazma Oynasi dizayni */
+        /* Do'stlarga o'tkazma bo'limi alohida blok dizayni (5-rasm) */
         .transfer-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin: 0 20px; text-align: center; }
         .transfer-my-id { background: #0d1117; padding: 10px; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 15px; }
         .transfer-my-id span { color: #ffd700; font-size: 18px; font-weight: bold; display: block; margin-top: 5px; }
@@ -250,7 +259,7 @@
             
             <div class="task-card" id="task-xalilovsales">
                 <div class="task-left">
-                    <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
+                    <div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
                     <div class="task-info"><h4>xalilov sales</h4><p>+500,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -261,7 +270,7 @@
             
             <div class="task-card" id="task-ibodmarket">
                 <div class="task-left">
-                    <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
+                    <div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
                     <div class="task-info"><h4>IBOD MARKET</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -272,7 +281,7 @@
 
             <div class="task-card" id="task-iboduc">
                 <div class="task-left">
-                    <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
+                    <div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
                     <div class="task-info"><h4>IBOD UC SERVICE</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -283,7 +292,7 @@
 
             <div class="task-card" id="task-ibodtour">
                 <div class="task-left">
-                    <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
+                    <div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
                     <div class="task-info"><h4>IBOD TOURNAMENT</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -294,7 +303,7 @@
 
             <div class="task-card" id="task-ibodmashka">
                 <div class="task-left">
-                    <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
+                    <div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
                     <div class="task-info"><h4>IBOD MASHKA</h4><p>+60,000 loot</p></div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -362,7 +371,6 @@
             <div class="ref-box" onclick="selectRefItem(this, 400, '325 UC')"><div class="ref-info"><h3>325 UC (RP)</h3></div><div class="ref-cost">👥 400 ta do'st</div></div>
             <div class="input-group"><input type="number" placeholder="PUBG ID" id="ref-uc-id"></div>
             <div class="input-group"><input type="text" placeholder="PUBG NIK" id="ref-uc-nick"></div>
-            
             <div class="input-group"><input type="text" placeholder="Siz bilan aloqa (Telegram yoki Tel)" id="ref-uc-contact"></div>
             <button class="submit-btn" onclick="requestRefWithdraw()">Tasdiqlash</button>
         </div>
@@ -394,7 +402,7 @@
         
         <div style="background: rgba(231,76,60,0.12); border: 1px solid #e74c3c; margin: 0 20px 15px 20px; padding: 15px; border-radius: 10px;">
             <h3 style="color:#e74c3c; font-size: 14px; margin-bottom: 8px;">🛑 QANDAY QILIB UC OLINADI? (O'qish majburiy!)</h3>
-            <p style="font-size: 12px; color: #8b949e; line-height: 1.5;">Xarid qilishdan oldin **@sherbeklichbot**ga ekraningizni to'liq video zapis (zapis) qilib tashlang! Video bo'lmasa, xarid qilsangiz ham UC berilmaydi va inobatga olinmaydi! <br><br>⚠️ **DIQQAT:** Agar quyidagi "Siz bilan aloqa" qatorini to'ldirmasangiz ham UC so'rovi mutlaqo inobatga olinmaydi va UC berilmaydi!</p>
+            <p style="font-size: 12px; color: #8b949e; line-height: 1.5;">Xarid qilishdan oldin **@sherbeklichbot**ga ekraningizni to'liq video zapis (screen record) qilib tashlang! Video bo'lmasa, xarid qilsangiz ham UC berilmaydi va inobatga olinmaydi! <br><br>⚠️ **DIQQAT:** Agar quyidagi "Siz bilan aloqa" qatorini to'ldirmasangiz ham UC so'rovi mutlaqo inobatga olinmaydi va UC berilmaydi!</p>
         </div>
         
         <div class="uc-options">
@@ -462,11 +470,11 @@
     <div id="toastNotification" class="toast-notification"></div>
 
     <script>
-        // O'yinchining toza vazifalar ro'yxatini bazadan olish (Akkaunt chalkashmasligi uchun)
+        // BAZA API: TO'G'RIDAN-TO'G'RI SERVERDAN VAZIFALARNI TORTISH (allorigins CHETLASHTIRILDI) (2-qism)
         async function fetchUserTasksFromServer() {
             try {
                 let targetUrl = `http://212.43.146.114:10000/get_user_tasks?userid=${userId}&t=${Date.now()}`;
-                let response = await fetch(targetUrl);
+                let response = await fetch(targetUrl); 
                 let result = await response.json();
                 if(result.success && result.tasks) {
                     result.tasks.forEach(tId => {
@@ -520,7 +528,6 @@
         const limitTextEl = document.getElementById('limitText');
         const energyBarEl = document.getElementById('energyBar');
 
-        // Restart xatosi butunlay yo'q qilindi!
         function initSecureDailyLimit() {
             let todayString = new Date().toLocaleDateString(); 
             if (localStorage.getItem('loottap_last_day_' + userId) !== todayString) {
@@ -556,11 +563,15 @@
         }
         setInterval(ghostSave, 2000);
 
-        // YANGILIKLAR RO'YXATINI YUKLASH (Qo'ng'iroqcha)
+        updateScoreDisplays();
+        limitTextEl.innerText = dailyLimit.toLocaleString();
+        updateEnergyUI();
+
+        // JONLI YANGILIKLARNI TO'G'RIDAN-TO'G'RI TO'G'RILASH (4-qism)
         async function fetchNewsFromServer() {
             try {
                 let targetUrl = `http://212.43.146.114:10000/get_news?t=${Date.now()}`;
-                let response = await fetch(targetUrl);
+                let response = await fetch(targetUrl); 
                 let result = await response.json();
                 if(result.success && result.news.length > 0) {
                     document.getElementById('news-badge').style.display = 'flex';
@@ -589,7 +600,7 @@
             setTimeout(() => { document.getElementById('newsModal').style.display = 'none'; document.getElementById('newsOverlay').style.display = 'none'; }, 300);
         }
 
-        // VAZIFALAR SERVER-SIDE TEKSHIRUVI
+        // VAZIFALAR TO'G'RIDAN-TO'G'RI API (6-qism)
         function goToTask(taskId, url) { if(tg && tg.openLink) { tg.openLink(url); } else { window.open(url, '_blank'); } }
         
         async function checkTaskAPI(taskId) {
@@ -599,7 +610,7 @@
 
             try {
                 let targetUrl = `http://212.43.146.114:10000/verify_task?userid=${userId}&task_id=${taskId}&t=${Date.now()}`;
-                let response = await fetch(targetUrl);
+                let response = await fetch(targetUrl); 
                 let result = await response.json();
                 
                 if (result.success) {
@@ -616,13 +627,13 @@
         }
         function moveTaskToBottom(taskId) { let el = document.getElementById('task-' + taskId); if(el) document.getElementById('tasks-container').appendChild(el); }
 
-        // KONKURS 1 & 2 DINAMIK FUNKSIYALAR
+        // KONKURS 1 VA 2 MUSTAQIL TEKSHIRUV (7-qism)
         function goToKonkurs(k_id) { let url = document.getElementById(`konkurs${k_id}-obuna-btn`).getAttribute('data-link'); if(url && tg && tg.openLink) tg.openLink(url); }
         function checkKonkurs(k_id) { window.Telegram.WebApp.openTelegramLink(`https://t.me/IbodTapBot?start=konkurs${k_id}`); showToast(`Tekshirilmoqda, botga qayting! 🔄`); }
 
         async function updateSingleKonkurs(k_id) {
             try {
-                const response = await fetch('http://212.43.146.114:10000/konkurs' + k_id + '.json?t=' + Date.now()); 
+                let response = await fetch(`http://212.43.146.114:10000/konkurs${k_id}.json?t=${Date.now()}`); 
                 let data = await response.json();
                 if(data && typeof data.count !== 'undefined') {
                     document.getElementById(`konkurs${k_id}-count`).innerText = data.count;
@@ -639,7 +650,7 @@
         function loadKonkursCount() { updateSingleKonkurs(1); updateSingleKonkurs(2); }
         loadKonkursCount(); setInterval(loadKonkursCount, 8000);
 
-        // DO'KON VA O'TKAZMA TIZIMI
+        // DO'KON VA XARID TIZIMI (8-qism)
         let selectedItemPrice = 6000000, selectedItemAmount = '60 UC';
         function selectItem(el, price, amt) {
             el.parentElement.querySelectorAll('.uc-box').forEach(b => b.classList.remove('active'));
@@ -652,18 +663,17 @@
             if (score >= selectedItemPrice) {
                 try {
                     let targetUrl = `http://212.43.146.114:10000/buy_uc?userid=${userId}&price=${selectedItemPrice}&uc_amount=${selectedItemAmount}&pubg_id=${id}&pubg_nick=${nick}&contact=${contact}&t=${Date.now()}`;
-                    let response = await fetch(targetUrl);
+                    let response = await fetch(targetUrl); 
                     let result = await response.json();
                     if (result.success) {
                         score -= selectedItemPrice; updateScoreDisplays(); ghostSave();
-                        // Katta Diqqat Oynasini chiqarish
                         document.body.innerHTML += `<div id="shop-alert" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;justify-content:center;align-items:center;padding:20px;text-align:center;"><div style="background:#161b22;padding:30px;border-radius:15px;border:2px solid #e74c3c;"><h2 style="color:#e74c3c; margin-bottom:15px;">DIQQAT! ⚠️</h2><p style="color:#fff; font-size:16px; margin-bottom:20px;">So'rovingiz muvaffaqiyatli ketdi!<br><br>Endi darhol o'yindan chiqib, ekran zapisini (videoni) <b>@sherbeklichbot</b> ga yuboring!</p><button onclick="window.location.reload()" style="background:#2ea043;padding:12px 25px;border:none;border-radius:10px;color:white;font-weight:bold;font-size:16px;cursor:pointer;">Tushundim yopish</button></div></div>`;
                     } else showToast(`❌ Xato: ${result.msg}`);
                 } catch(e) { showToast("Serverda xatolik!"); }
             } else showToast("Hisobingizda yetarli loot mavjud emas! ❌");
         }
 
-        // P2P ID ISMNI JONLI QIDIRISH
+        // P2P ID ISMNI LOGIK JONLI QIDIRISH (Phonebook - 9-qism)
         let nameTimeout;
         async function fetchUserName(targetId) {
             let disp = document.getElementById('transfer-name-display'); disp.innerText = "";
@@ -673,7 +683,7 @@
                 disp.style.color = "#8b949e"; disp.innerText = "Qidirilmoqda...";
                 try {
                     let url = `http://212.43.146.114:10000/get_name?target_id=${targetId}&t=${Date.now()}`;
-                    let res = await fetch(url);
+                    let res = await fetch(url); 
                     let data = await res.json();
                     if(data.success) { disp.style.color = "#2ea043"; disp.innerText = "👤 " + data.name; } 
                     else { disp.style.color = "#e74c3c"; disp.innerText = "O'yinchi topilmadi!"; }
@@ -681,6 +691,7 @@
             }, 600);
         }
 
+        // P2P O'TKAZMA FILTRLANGAN TO'LIQ FUNKSIYA (10-qism)
         async function sendTransferAPI() {
             let toId = document.getElementById('transfer-to-id').value;
             let amount = document.getElementById('transfer-amount').value;
@@ -688,7 +699,7 @@
             
             try {
                 let targetUrl = `http://212.43.146.114:10000/transfer_loot?from_user=${userId}&to_user=${toId}&amount=${amount}&t=${Date.now()}`;
-                let response = await fetch(targetUrl);
+                let response = await fetch(targetUrl); 
                 let result = await response.json();
                 if (result.success) {
                     score -= parseInt(amount); updateScoreDisplays(); ghostSave();
@@ -704,7 +715,7 @@
             if (tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl); else window.open(shareUrl, '_blank');
         }
 
-        // Tap Animatsiyasi (z-index: 999999 o'ta oldi qatlamda)
+        // Tap harakati (z-index: 999999 orqali oyna ustida)
         function handleTap(e) {
             let tapPower = shopData.tap.levels[userUpgrades.tap];
             if (energy >= tapPower && dailyLimit >= tapPower) {
@@ -738,7 +749,7 @@
             else { document.getElementById('sideTab').classList.add('moved-left'); document.getElementById('tabArrow').innerText = '›'; }
         }
 
-        // BARABAN TAYMER VA BALANS FIX
+        // BARABAN TAYMER VA BALANS MUKAMMAL FIX (500K BERADI)
         const prizes = [
             { id: 0, name: '500k', value: 500000 }, { id: 1, name: '200k', value: 200000 },
             { id: 2, name: '300k', value: 300000 }, { id: 3, name: '200k', value: 200000 },
@@ -774,7 +785,7 @@
                 score += prizes[randIndex].value; updateScoreDisplays(); ghostSave();
                 showToast(`🎉 Tabriklaymiz! Sizga ${prizes[randIndex].name} loot tushdi!`); 
                 isSpinning = false;
-                checkSpinStatus(); // Taymer darhol aylanib bo'lingach chiqadi!
+                checkSpinStatus(); 
             }, 4000); 
         }
 
