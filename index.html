@@ -7,19 +7,26 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0d1117; color: #ffffff; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        .app-tab { display: none; width: 100%; height: 100%; flex-direction: column; overflow-y: auto; padding-bottom: 80px; }
+        .app-tab { display: none; width: 100%; height: 100%; flex-direction: column; overflow-y: auto; padding-bottom: 90px; }
         .app-tab.active { display: flex; }
         
-        .header { flex-shrink: 0; padding: 20px; text-align: center; z-index: 10; }
+        .header { flex-shrink: 0; padding: 20px; text-align: center; z-index: 10; position: relative; }
         .user-info { font-size: 14px; color: #8b949e; margin-bottom: 10px; font-weight: bold; }
         .balance-container { display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 36px; font-weight: bold; }
-        .balance-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #ffd700, #ffaa00); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        
+        /* OLMOS O'RNIGA UC ICON (Yoki rasm ulanadi) */
+        .balance-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .balance-icon img { width: 100%; height: 100%; object-fit: contain; }
+        
         .daily-limit { font-size: 13px; color: #8b949e; margin-top: 8px; font-weight: 500; }
+        
+        /* QO'NG'IROQCHA (YANGILIKLAR) */
+        .bell-icon { position: absolute; top: 20px; right: 20px; font-size: 24px; color: #ffd700; cursor: pointer; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .bell-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; font-size: 10px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #0d1117; display: none; }
         
         .screens-wrapper { position: relative; flex-grow: 1; overflow: hidden; display: flex; }
         .screen-tap { position: absolute; width: 100%; height: 100%; left: 0; transition: transform 0.4s ease; display: flex; justify-content: center; align-items: center; }
@@ -34,7 +41,7 @@
         .tab-text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 5px; }
         .side-tab.moved-left .tab-text-vertical { transform: rotate(0deg); margin-top: 0; margin-bottom: 5px; }
         
-        /* Baraban CSS orqali silliq aylanishi */
+        /* Baraban CSS animatsiyasi (Qotmaydi) */
         .wheel-container { position: relative; width: 280px; height: 280px; flex-shrink: 0; margin-bottom: 15px; }
         .roulette-wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 20px rgba(46, 160, 67, 0.4); position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); transform: rotate(0deg); background: conic-gradient( #2ea043 0deg 45deg, #000 45deg 90deg, #fff 90deg 135deg, #000 135deg 180deg, #2ea043 180deg 225deg, #000 225deg 270deg, #fff 270deg 315deg, #000 315deg 360deg ); }
         .wheel-text-container { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
@@ -43,24 +50,21 @@
         .wheel-pointer { position: absolute; top: 50%; right: -18px; transform: translateY(-50%); width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 20px solid #fff; z-index: 4; filter: drop-shadow(2px 0 2px rgba(0,0,0,0.5)); }
         
         .spin-btn-active { background-color: #388E3C; color: #ffffff; padding: 14px 30px; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 10px; border: none; cursor: pointer; width: 85%; transition: 0.2s; }
-        .spin-btn-active:active { transform: scale(0.95); }
         .spin-btn-disabled { background-color: #c4c4c4; color: #333333; padding: 14px 10px; border-radius: 12px; font-weight: bold; font-size: 15px; margin-top: 10px; border: none; width: 85%; }
-        .spin-note { font-size: 12px; color: #8b949e; margin-top: 12px; }
         
         .energy-wrapper { padding: 10px 20px 25px 20px; flex-shrink: 0; z-index: 50; position: relative; }
         .energy-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .energy-text { font-size: 18px; font-weight: bold; }
         .boost-btn-small { background-color: #21262d; border: 1px solid #30363d; color: white; padding: 8px 15px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: 0.2s; }
-        .boost-btn-small:active { transform: scale(0.95); }
         .progress-bar-bg { width: 100%; height: 10px; background-color: #21262d; border-radius: 5px; overflow: hidden; }
         .progress-bar-fill { height: 100%; background-color: #2ea043; width: 100%; transition: width 0.2s ease; }
         
         .page-header { text-align: center; padding: 20px; margin-bottom: 10px; }
         .page-header h2 { font-size: 20px; margin-bottom: 5px; }
-        .page-header p { font-size: 13px; color: #8b949e; }
-        .section-title { font-size: 16px; font-weight: bold; margin: 15px 20px 10px 20px; color: #8b949e; text-transform: uppercase;}
+        .section-title { font-size: 14px; font-weight: bold; margin: 15px 20px 10px 20px; color: #8b949e; text-transform: uppercase;}
         
-        .task-card { background-color: #161b22; border-radius: 12px; padding: 15px; margin: 0 20px 12px 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; transition: all 0.3s ease;}
+        /* VAZIFALAR / KONKURS KARTALARI */
+        .task-card { background-color: #161b22; border-radius: 12px; padding: 15px; margin: 0 20px 12px 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d;}
         .task-left { display: flex; align-items: center; gap: 15px; }
         .task-icon-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; color: white; }
         .task-info h4 { font-size: 15px; margin-bottom: 4px; }
@@ -68,9 +72,7 @@
         .task-go-btn { padding: 8px 0; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: white; border: none; cursor: pointer; transition: 0.2s; font-weight: bold; font-size: 13px;}
         .task-go-btn:disabled { background-color: #30363d !important; color: #8b949e !important; cursor: not-allowed; }
         
-        .uc-form { padding: 0 20px; margin-top: 10px; }
-        .shop-section-title { font-size: 14px; color: #8b949e; margin-bottom: 12px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-        .uc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .uc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; padding: 0 20px; }
         .uc-box { position: relative; background-color: #161b22; border: 2px solid #30363d; border-radius: 12px; padding: 15px 12px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; }
         .uc-box.active { border-color: #2ea043; background-color: rgba(46, 160, 67, 0.1); }
         .pkg-tier { font-size: 12px; color: #8b949e; font-weight: bold; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
@@ -79,56 +81,43 @@
         .active-check { position: absolute; bottom: 10px; right: 10px; width: 22px; height: 22px; background-color: #2ea043; border-radius: 50%; display: none; justify-content: center; align-items: center; color: #ffffff; font-size: 12px; font-weight: bold; }
         .uc-box.active .active-check { display: flex; }
         
-        .input-group { margin-bottom: 15px; }
+        .input-group { margin: 0 20px 15px 20px; }
         .input-group input { width: 100%; background-color: #161b22; border: 1px solid #30363d; color: white; padding: 15px; border-radius: 10px; font-size: 14px; outline: none; }
         .input-group input:focus { border-color: #2ea043; }
-        .submit-btn { width: 100%; background-color: #2ea043; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; border: none; margin-top: 10px; cursor: pointer; transition: 0.2s; }
+        .submit-btn { width: calc(100% - 40px); background-color: #2ea043; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; border: none; margin: 10px 20px; cursor: pointer; transition: 0.2s; }
         .submit-btn:active { transform: scale(0.98); }
         
-        .red-btn { background-color: #e74c3c; color: white; border-radius: 12px; padding: 14px; margin: 0 20px 15px 20px; font-weight: bold; font-size: 15px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
-        .invite-btn { background-color: #2ea043; color: white; border-radius: 12px; padding: 16px; margin: 10px 20px 10px 20px; font-weight: bold; font-size: 16px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); }
-        
-        .ref-rule { background-color: rgba(255, 215, 0, 0.1); border: 1px solid #ffaa00; padding: 10px; margin: 0 20px 15px 20px; border-radius: 8px; font-size: 12px; color: #ffd700; text-align: center; }
-        .ref-box { display: flex; justify-content: space-between; align-items: center; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; transition: 0.2s; cursor: pointer;}
-        .ref-box.active { border-color: #2ea043; background-color: rgba(46, 160, 67, 0.1); }
-        .ref-info h3 { font-size: 16px; color: white; }
-        .ref-info p { font-size: 12px; color: #8b949e; margin-top: 3px; }
-        .ref-cost { background-color: #2ea043; color: white; padding: 5px 10px; border-radius: 8px; font-weight: bold; font-size: 14px; }
-        
         /* Shaffof va Toza Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background: linear-gradient(to top, rgba(13,17,23,1) 50%, rgba(13,17,23,0) 100%); padding: 25px 10px 15px 10px; z-index: 1000; border-top: none; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #8b949e; font-size: 12px; cursor: pointer; width: 20%; gap: 5px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        .nav-item.active { color: #2ea043; }
-        .nav-icon { font-size: 24px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background: rgba(13, 17, 23, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 15px 10px 20px 10px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #8b949e; font-size: 11px; cursor: pointer; width: 20%; gap: 6px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8); transition: 0.3s; }
+        .nav-item.active { color: #2ea043; transform: translateY(-3px); }
+        .nav-icon { font-size: 22px; }
 
-        .toast-notification { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #2ea043; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 4000; transition: bottom 0.4s; white-space: nowrap; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .toast-notification { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #2ea043; color: white; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 9999; transition: bottom 0.4s; white-space: nowrap; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         
-        /* Floating number qatlamni eng oldiga chiqarish */
-        .floating-number { position: absolute; font-size: 28px; font-weight: bold; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.8); pointer-events: none; animation: floatUp 1s forwards; z-index: 5000; }
+        /* Sonlar qatlami eng oldinda! */
+        .floating-number { position: fixed; font-size: 28px; font-weight: bold; color: white; text-shadow: 0 0 5px rgba(0,0,0,0.8); pointer-events: none; animation: floatUp 1s forwards; z-index: 99999; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
         
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3500; display: none; opacity: 0; transition: opacity 0.3s; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); z-index: 3500; display: none; opacity: 0; transition: opacity 0.3s; }
         .overlay.show { opacity: 1; display: block; }
         .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background-color: #161b22; border-radius: 24px 24px 0 0; z-index: 4000; padding: 20px 0 25px 0; transition: bottom 0.3s cubic-bezier(0.17, 0.67, 0.12, 0.99); display: flex; flex-direction: column; max-height: 85vh; border-top: 1px solid #30363d; }
         .bottom-sheet.open { bottom: 0; }
-        .sheet-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 15px 20px; border-bottom: 1px solid #30363d; margin-bottom: 10px; }
-        .sheet-header h3 { font-size: 18px; color: #fff; margin: 0; }
-        .sheet-content { overflow-y: auto; max-height: 70vh; padding: 0 20px 20px 20px; }
-        .booster-card { background-color: #161b22; border-radius: 12px; padding: 15px; margin: 0 0 12px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; }
-        .booster-info h4 { font-size: 15px; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .lvl-badge { background-color: #2ea043; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
-        .booster-info p { font-size: 12px; color: #8b949e; line-height: 1.4; }
-        .booster-price { background-color: #2ea043; color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; }
         
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background-color: #161b22; border: 1px solid #30363d; border-radius: 16px; z-index: 5000; width: 90%; max-width: 350px; padding: 25px; display: none; opacity: 0; transition: all 0.3s; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .modal.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        /* Yangiliklar Modali */
+        .news-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background-color: #161b22; border: 1px solid #30363d; border-radius: 16px; z-index: 5000; width: 90%; max-width: 350px; max-height: 70vh; padding: 20px; display: none; opacity: 0; transition: all 0.3s; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .news-modal.show { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .news-list { overflow-y: auto; flex-grow: 1; margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .news-item { background: rgba(231, 76, 60, 0.1); border-left: 4px solid #e74c3c; padding: 12px; border-radius: 6px; }
+        .news-text { color: #ff7675; font-size: 14px; font-weight: bold; line-height: 1.4; }
+        .news-date { color: #8b949e; font-size: 11px; margin-top: 8px; text-align: right; }
         .modal-close { background-color: #30363d; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
         
         /* O'tkazma Oynasi */
-        .transfer-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin: 0 20px; }
-        .transfer-title { font-size: 14px; font-weight: bold; color: #ffaa00; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .transfer-my-id { background: #0d1117; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #30363d; margin-bottom: 15px; }
+        .transfer-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin: 0 20px; text-align: center; }
+        .transfer-my-id { background: #0d1117; padding: 10px; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 15px; }
         .transfer-my-id span { color: #ffd700; font-size: 18px; font-weight: bold; display: block; margin-top: 5px; }
+        .transfer-name-disp { color: #2ea043; font-size: 14px; font-weight: bold; margin-top: -10px; margin-bottom: 15px; height: 18px; }
     </style>
 </head>
 <body>
@@ -154,7 +143,7 @@
                             <button onclick='tg.close()' style='margin-top: 30px; background:#2ea043; color:white; border:none; padding:15px 30px; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;'>Botga qaytish</button>
                         </div>`;
                 }
-            } catch(e) { console.log("Qorovul xatosi:", e); }
+            } catch(e) {}
         }
         checkAccess();
     </script>
@@ -163,10 +152,19 @@
         <div class="header">
             <div class="user-info" id="username_display">LootTap O'yinchisi</div>
             <div class="balance-container">
-                <div class="balance-icon">🪙</div>
+                <!-- UC rasm yoki tanga -->
+                <div class="balance-icon">
+                    <img src="uc.png" alt="UC" onerror="this.style.display='none'; this.parentElement.innerText='🪙';">
+                </div>
                 <span id="score">0</span>
             </div>
             <div class="daily-limit">Bugunlik limit: <span id="limitText">15,000</span></div>
+            
+            <!-- YANGILIKLAR QO'NG'IROQCHASI -->
+            <div class="bell-icon" onclick="openNewsModal()">
+                <i class="fa-solid fa-bell"></i>
+                <div class="bell-badge" id="news-badge">0</div>
+            </div>
         </div>
 
         <div class="screens-wrapper">
@@ -180,14 +178,14 @@
                 <div class="wheel-container">
                     <div class="roulette-wheel" id="wheel">
                         <div class="wheel-text-container">
-                            <div class="wheel-text" style="transform: rotate(22.5deg); color: #111;">500k loot</div>
-                            <div class="wheel-text" style="transform: rotate(67.5deg); color: #fff;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(22.5deg); color: #fff;">500k loot</div>
+                            <div class="wheel-text" style="transform: rotate(67.5deg); color: #111;">200k loot</div>
                             <div class="wheel-text" style="transform: rotate(112.5deg); color: #fff;">300k loot</div>
-                            <div class="wheel-text" style="transform: rotate(157.5deg); color: #fff;">200k loot</div>
-                            <div class="wheel-text" style="transform: rotate(202.5deg); color: #111;">500k loot</div>
-                            <div class="wheel-text" style="transform: rotate(247.5deg); color: #fff;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(157.5deg); color: #111;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(202.5deg); color: #fff;">500k loot</div>
+                            <div class="wheel-text" style="transform: rotate(247.5deg); color: #111;">200k loot</div>
                             <div class="wheel-text" style="transform: rotate(292.5deg); color: #fff;">300k loot</div>
-                            <div class="wheel-text" style="transform: rotate(337.5deg); color: #fff;">200k loot</div>
+                            <div class="wheel-text" style="transform: rotate(337.5deg); color: #111;">200k loot</div>
                         </div>
                     </div>
                     <div class="wheel-center">LootTap<div class="wheel-pointer"></div></div>
@@ -213,13 +211,15 @@
         </div>
     </div>
 
+    <!-- KONKURS BO'LIMI -->
     <div id="tab-konkurs" class="app-tab">
         <div class="page-header">
             <h2>🏆 Ikkita Super Konkurs</h2>
             <p>Kanallarga obuna bo'ling va tekin UC yutib oling</p>
         </div>
 
-        <div style="background: #161b22; border: 2px solid #ffaa00; margin: 10px 20px 20px 20px; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 0 15px rgba(255, 170, 0, 0.2); position: relative; z-index: 100;">
+        <!-- 1-KONKURS -->
+        <div style="background: #161b22; border: 2px solid #ffaa00; margin: 10px 20px 20px 20px; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);">
             <h3 id="konkurs1-main-title" style="color: #ffd700; margin-bottom: 5px; font-size: 18px;">🎁 1-Konkurs: Tekin UC</h3>
             <p id="konkurs1-channel-name" style="font-size: 13px; color: #8b949e; margin-bottom: 12px;">Yuklanmoqda...</p>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -230,13 +230,13 @@
                 Qatnashuvchilar: <span id="konkurs1-count" style="color: #ffaa00;">0</span> / <span id="konkurs1-max">0</span>
             </div>
         </div>
-
         <div id="konkurs1-msg-box" style="display: none; background: #161b22; border: 2px solid #ff0000; margin: -10px 20px 20px 20px; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);">
             <h4 style="color: #ff4d4d; margin-bottom: 5px; font-size: 15px;"><i class="fa-solid fa-bell"></i> Muhim Xabar (1)</h4>
             <p id="konkurs1-msg-text" style="font-size: 13px; color: #fff; line-height: 1.4; white-space: pre-wrap;"></p>
         </div>
 
-        <div style="background: #161b22; border: 2px solid #3498db; margin: 10px 20px 20px 20px; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 0 15px rgba(52, 152, 219, 0.2); position: relative; z-index: 100;">
+        <!-- 2-KONKURS -->
+        <div style="background: #161b22; border: 2px solid #3498db; margin: 10px 20px 20px 20px; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);">
             <h3 id="konkurs2-main-title" style="color: #3498db; margin-bottom: 5px; font-size: 18px;">🎁 2-Konkurs: Tekin UC</h3>
             <p id="konkurs2-channel-name" style="font-size: 13px; color: #8b949e; margin-bottom: 12px;">Yuklanmoqda...</p>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -247,122 +247,124 @@
                 Qatnashuvchilar: <span id="konkurs2-count" style="color: #3498db;">0</span> / <span id="konkurs2-max">0</span>
             </div>
         </div>
-
         <div id="konkurs2-msg-box" style="display: none; background: #161b22; border: 2px solid #ff0000; margin: -10px 20px 20px 20px; padding: 15px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);">
             <h4 style="color: #ff4d4d; margin-bottom: 5px; font-size: 15px;"><i class="fa-solid fa-bell"></i> Muhim Xabar (2)</h4>
             <p id="konkurs2-msg-text" style="font-size: 13px; color: #fff; line-height: 1.4; white-space: pre-wrap;"></p>
         </div>
     </div>
 
-    <div id="tab-friends" class="app-tab">
-        <div class="page-header" style="border: none; padding-bottom: 0;">
-            <div style="font-size: 60px; margin-bottom: 10px;">🤝</div>
-            <h2>Do'stlaringizni taklif qiling!</h2>
-        </div>
-        
-        <div style="background: #161b22; margin: 10px 20px; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #30363d;">
-            <p style="color: #8b949e; font-size: 14px;">Sizning taklif qilgan do'stlaringiz:</p>
-            <h1 style="color: #2ea043; font-size: 40px; margin-top: 5px;" id="my-friends-count">0</h1>
-        </div>
-
-        <button class="invite-btn" onclick="copyRefLink()">📲 Havolani ulashish</button>
-        <div class="ref-rule">
-            ⚠️ <b>QOIDA:</b> Firibgarlikni oldini olish uchun yutuq olishda hisobingizda kamida <b>10,000,000 Loot</b> bo'lishi shart! (Lootingiz yechilmaydi)
-        </div>
-        
-        <div class="uc-form">
-            <div class="shop-section-title">📦 UC uchun do'stlar</div>
-            <div class="ref-box active" onclick="selectRefItem(this, 60, '60 UC')"><div class="ref-info"><h3>60 UC</h3></div><div class="ref-cost">👥 60 ta do'st</div></div>
-            <div class="ref-box" onclick="selectRefItem(this, 120, '120 UC')"><div class="ref-info"><h3>120 UC</h3></div><div class="ref-cost">👥 120 ta do'st</div></div>
-            <div class="ref-box" onclick="selectRefItem(this, 180, '180 UC')"><div class="ref-info"><h3>180 UC</h3></div><div class="ref-cost">👥 180 ta do'st</div></div>
-            <div class="ref-box" onclick="selectRefItem(this, 400, '325 UC')"><div class="ref-info"><h3>325 UC (RP)</h3></div><div class="ref-cost">👥 400 ta do'st</div></div>
-            <div class="input-group"><input type="number" placeholder="PUBG ID" id="ref-uc-id"></div>
-            <div class="input-group"><input type="text" placeholder="PUBG NIK" id="ref-uc-nick"></div>
-            <button class="submit-btn" onclick="requestRefWithdraw()">Tasdiqlash</button>
-        </div>
-
-        <div class="section-title">🤝 DO'STLARGA O'TKAZMA (3 KUNDA 1 MARTA)</div>
-        <div class="transfer-box">
-            <div class="transfer-my-id">Sizning ID raqamingiz: <span id="transfer-id-display">123456</span></div>
-            <div class="input-group"><input type="number" placeholder="Do'stingizning ID raqami" id="transfer-to-id"></div>
-            <div class="input-group"><input type="number" placeholder="Miqdor (100k dan 500k gacha)" id="transfer-amount"></div>
-            <button class="submit-btn" onclick="sendTransfer()">💸 Jo'natish</button>
-            <p style="font-size: 11px; color: #e74c3c; text-align: center; margin-top: 10px;">⚠️ Diqqat: O'tkazmalar kuzatiladi. Nakrutka qilgan akkauntlar bloklanadi!</p>
-        </div>
-    </div>
-
+    <!-- VAZIFALAR (API BAZA) -->
     <div id="tab-tasks" class="app-tab">
         <div class="page-header">
             <h2>Vazifalar</h2>
             <p>Vazifalarni bajaring va ko'proq loot ishlash</p>
         </div>
-        <div class="section-title">Maxsus Topshiriqlar</div>
         <div id="tasks-container">
-            
             <div class="task-card" id="task-kattahomiy" style="border: 2px solid #ff0000; background: linear-gradient(145deg, #161b22 0%, rgba(255, 0, 0, 0.1) 100%);">
-               <div class="task-left">
-                   <div class="task-icon-circle" style="background: #ff0000;"><i class="fa-brands fa-youtube"></i></div>
-                   <div class="task-info"><h4>👑 KATTA HOMIY</h4><p>+1,500,000 loot</p></div>
-               </div>
-               <div style="display: flex; flex-direction: column; gap: 5px;">
-                   <button class="task-go-btn" style="width: 90px; background-color: #ff0000;" onclick="goToTask('kattahomiy', 'https://youtube.com/@ali_vortex07')">Obuna</button>
-                   <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-kattahomiy-btn" onclick="checkTaskAPI('kattahomiy')">Tekshirish</button>
-               </div>
+               <div class="task-left"><div class="task-icon-circle" style="background: #ff0000;"><i class="fa-brands fa-youtube"></i></div><div class="task-info"><h4>👑 KATTA HOMIY</h4><p>+1,500,000 loot</p></div></div>
+               <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #ff0000;" onclick="goToTask('kattahomiy', 'https://youtube.com/@ali_vortex07')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-kattahomiy-btn" onclick="checkTaskAPI('kattahomiy')">Tekshirish</button></div>
             </div>
             
             <div class="task-card" id="task-xalilovsales">
-                <div class="task-left">
-                    <div class="task-icon-circle task-icon-telegram" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div>
-                    <div class="task-info"><h4>xalilov sales</h4><p>+500,000 loot</p></div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('xalilovsales', 'https://t.me/xalilovsales')">Obuna</button>
-                    <button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-xalilovsales-btn" onclick="checkTaskAPI('xalilovsales')">Tekshirish</button>
-                </div>
+                <div class="task-left"><div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div><div class="task-info"><h4>xalilov sales</h4><p>+500,000 loot</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('xalilovsales', 'https://t.me/xalilovsales')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-xalilovsales-btn" onclick="checkTaskAPI('xalilovsales')">Tekshirish</button></div>
+            </div>
+
+            <div class="task-card" id="task-ibodmarket">
+                <div class="task-left"><div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div><div class="task-info"><h4>IBOD MARKET</h4><p>+60,000 loot</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('ibodmarket', 'https://t.me/ibodmarket')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodmarket-btn" onclick="checkTaskAPI('ibodmarket')">Tekshirish</button></div>
+            </div>
+
+            <div class="task-card" id="task-iboduc">
+                <div class="task-left"><div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div><div class="task-info"><h4>IBOD UC SERVICE</h4><p>+60,000 loot</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('iboduc', 'https://t.me/iboduc_service')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-iboduc-btn" onclick="checkTaskAPI('iboduc')">Tekshirish</button></div>
+            </div>
+
+            <div class="task-card" id="task-ibodtour">
+                <div class="task-left"><div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div><div class="task-info"><h4>IBOD TOURNAMENT</h4><p>+60,000 loot</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('ibodtour', 'https://t.me/ibod_tournament')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodtour-btn" onclick="checkTaskAPI('ibodtour')">Tekshirish</button></div>
+            </div>
+
+            <div class="task-card" id="task-ibodmashka">
+                <div class="task-left"><div class="task-icon-circle" style="background-color: #0088cc;"><i class="fa-brands fa-telegram"></i></div><div class="task-info"><h4>IBOD MASHKA</h4><p>+60,000 loot</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #0088cc;" onclick="goToTask('ibodmashka', 'https://t.me/ibodmashka_pubg')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ibodmashka-btn" onclick="checkTaskAPI('ibodmashka')">Tekshirish</button></div>
+            </div>
+
+            <div class="task-card" id="task-ytibodtap">
+                <div class="task-left"><div class="task-icon-circle" style="background: rgba(255,0,0,0.1); color: #ff0000;"><i class="fa-brands fa-youtube"></i></div><div class="task-info"><h4>IBOD TAP (YT)</h4><p>+60,000 loot</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #ff0000;" onclick="goToTask('ytibodtap', 'https://youtube.com/@ibodtap')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-ytibodtap-btn" onclick="checkTaskAPI('ytibodtap')">Tekshirish</button></div>
+            </div>
+
+            <div class="task-card" id="task-insibodmash">
+                <div class="task-left"><div class="task-icon-circle" style="background: rgba(225,48,108,0.1); color: #E1306C;"><i class="fa-brands fa-instagram"></i></div><div class="task-info"><h4>IBOD MASHENKA (INS)</h4><p>+60,000 loot</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #E1306C;" onclick="goToTask('insibodmash', 'https://www.instagram.com/ibodmashennik')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-insibodmash-btn" onclick="checkTaskAPI('insibodmash')">Tekshirish</button></div>
+            </div>
+
+            <div class="task-card" id="task-insibodmarket">
+                <div class="task-left"><div class="task-icon-circle" style="background: rgba(225,48,108,0.1); color: #E1306C;"><i class="fa-brands fa-instagram"></i></div><div class="task-info"><h4>IBOD MARKET (INS)</h4><p>+60,000 loot</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 5px;"><button class="task-go-btn" style="width: 90px; background-color: #E1306C;" onclick="goToTask('insibodmarket', 'https://www.instagram.com/ibod_market')">Obuna</button><button class="task-go-btn" style="width: 90px; background-color: #30363d; color: #8b949e;" id="check-insibodmarket-btn" onclick="checkTaskAPI('insibodmarket')">Tekshirish</button></div>
             </div>
         </div>
     </div>
 
+    <!-- DO'STLAR VA O'TKAZMALAR -->
+    <div id="tab-friends" class="app-tab">
+        <div class="page-header" style="border: none; padding-bottom: 0;">
+            <div style="font-size: 50px; margin-bottom: 5px;">🤝</div>
+            <h2>Do'stlaringizni taklif qiling!</h2>
+        </div>
+        
+        <div style="background: #161b22; margin: 10px 20px; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #30363d;">
+            <p style="color: #8b949e; font-size: 14px;">Taklif qilgan do'stlaringiz:</p>
+            <h1 style="color: #2ea043; font-size: 40px; margin-top: 5px;" id="my-friends-count">0</h1>
+        </div>
+        <button class="invite-btn" onclick="copyRefLink()">📲 Havolani ulashish</button>
+        
+        <div class="section-title" style="text-align: center; margin-top:20px;">🤝 DO'STLARGA O'TKAZMA</div>
+        <div class="transfer-box">
+            <div class="transfer-my-id">Sizning ID: <span id="transfer-id-display">123456</span></div>
+            <!-- INPUTLARGA BLOK QO'YILDI -->
+            <input type="text" placeholder="Do'stingizning ID raqami" id="transfer-to-id" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length > 15) this.value = this.value.slice(0,15); fetchUserName(this.value);" style="width: 100%; background-color: #0d1117; border: 1px solid #30363d; color: white; padding: 15px; border-radius: 10px; font-size: 14px; outline: none; margin-bottom: 10px;">
+            <div class="transfer-name-disp" id="transfer-name-display"></div>
+            <input type="text" placeholder="Miqdor (100k - 300k)" id="transfer-amount" oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="width: 100%; background-color: #0d1117; border: 1px solid #30363d; color: white; padding: 15px; border-radius: 10px; font-size: 14px; outline: none; margin-bottom: 15px;">
+            
+            <button class="submit-btn" style="margin: 0; width: 100%;" onclick="sendTransferAPI()">💸 Jo'natish</button>
+            <p style="font-size: 11px; color: #e74c3c; margin-top: 10px;">⚠️ Diqqat: Nakrutkachi akkauntlar bloklanadi. Kunda 1 marta mumkin!</p>
+        </div>
+    </div>
+
+    <!-- DO'KON API -->
     <div id="tab-shop" class="app-tab">
         <div class="page-header">
-            <h2>UC Do'koni (Loot orqali)</h2>
+            <h2>UC Do'koni</h2>
             <p>Lootlarni PUBG UC ga almashtiring</p>
         </div>
         
-        <button class="red-btn" onclick="openRulesModal()">❓ QANDAY QILIB UC OLINADI?</button>
-        
-        <div class="uc-form">
-            <div class="uc-options">
-                <div class="uc-box active" onclick="selectItem(this, 4500000, '60 UC')">
-                    <div class="pkg-tier">Standart <span></span></div>
-                    <div class="pkg-amount">60 UC</div>
-                    <div class="pkg-cost">4.5 mln loot</div>
-                    <div class="active-check"><i class="fa-solid fa-check"></i></div>
-                </div>
-                <div class="uc-box" onclick="selectItem(this, 8500000, '120 UC')">
-                    <div class="pkg-tier">Popular <span>🔥</span></div>
-                    <div class="pkg-amount">120 UC</div>
-                    <div class="pkg-cost">8.5 mln loot</div>
-                    <div class="active-check"><i class="fa-solid fa-check"></i></div>
-                </div>
-                <div class="uc-box" onclick="selectItem(this, 20000000, '325 UC')">
-                    <div class="pkg-tier">Pro <span></span></div>
-                    <div class="pkg-amount">325 UC</div>
-                    <div class="pkg-cost">20 mln loot</div>
-                    <div class="active-check"><i class="fa-solid fa-check"></i></div>
-                </div>
-                <div class="uc-box" onclick="selectItem(this, 40000000, '660 UC')">
-                    <div class="pkg-tier">Elite <span>👑</span></div>
-                    <div class="pkg-amount">660 UC</div>
-                    <div class="pkg-cost">40 mln loot</div>
-                    <div class="active-check"><i class="fa-solid fa-check"></i></div>
-                </div>
-            </div>
-            <div class="input-group"><input type="number" placeholder="PUBG ID" id="uc-id"></div>
-            <div class="input-group"><input type="text" placeholder="PUBG NIK" id="uc-nick"></div>
-            <div class="input-group"><input type="text" placeholder="Siz bilan aloqa uchun (Telegram yoki Tel raqam)" id="uc-contact"></div>
-            <button class="submit-btn" onclick="requestApiWithdraw()">Tasdiqlash</button>
+        <div style="background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; margin: 0 20px 15px 20px; padding: 15px; border-radius: 10px; text-align: left;">
+            <h3 style="color:#e74c3c; font-size: 15px; margin-bottom: 10px;">❓ QANDAY QILIB UC OLINADI? (O'qish majburiy)</h3>
+            <p style="font-size: 12px; color: #8b949e; line-height: 1.5;">1. Quyidan o'zingizga kerakli paketni tanlang.<br>2. PUBG ID, NIK va <b>Siz bilan aloqa</b> ma'lumotlarini aniq kiriting.<br>3. Tasdiqlashni bosing. <br><br>⚠️ <b>MUHIM:</b> UC olishingizdan oldin <b>@sherbeklichbot</b> ga o'yinni ekran zapis qilib (video) tashlang. Video olinmasa, UC xarid qilsangiz ham inobatga olinmaydi! Botda qanday muammo bo'lsa shu botga yozing.</p>
         </div>
+        
+        <div class="uc-options">
+            <div class="uc-box active" onclick="selectItem(this, 6000000, '60 UC')"><div class="pkg-tier">Starter <span></span></div><div class="pkg-amount">60 UC</div><div class="pkg-cost">6 mln loot</div><div class="active-check"><i class="fa-solid fa-check"></i></div></div>
+            <div class="uc-box" onclick="selectItem(this, 12000000, '130 UC')"><div class="pkg-tier">Popular <span>🔥</span></div><div class="pkg-amount">130 UC</div><div class="pkg-cost">12 mln loot</div><div class="active-check"><i class="fa-solid fa-check"></i></div></div>
+            <div class="uc-box" onclick="selectItem(this, 30000000, '325 UC')"><div class="pkg-tier">Pro <span></span></div><div class="pkg-amount">325 UC</div><div class="pkg-cost">30 mln loot</div><div class="active-check"><i class="fa-solid fa-check"></i></div></div>
+            <div class="uc-box" onclick="selectItem(this, 60000000, '660 UC')"><div class="pkg-tier">Elite <span>👑</span></div><div class="pkg-amount">660 UC</div><div class="pkg-cost">60 mln loot</div><div class="active-check"><i class="fa-solid fa-check"></i></div></div>
+        </div>
+        <div class="input-group"><input type="number" placeholder="PUBG ID" id="uc-id"></div>
+        <div class="input-group"><input type="text" placeholder="PUBG NIK" id="uc-nick"></div>
+        <div class="input-group"><input type="text" placeholder="Siz bilan aloqa (Telegram yoki Tel)" id="uc-contact"></div>
+        <button class="submit-btn" onclick="requestApiWithdraw()">Tasdiqlash</button>
+    </div>
+
+    <!-- NEWS MODAL (Qo'ng'iroqcha) -->
+    <div class="overlay" id="newsOverlay" onclick="closeNewsModal()"></div>
+    <div class="news-modal" id="newsModal">
+        <h3 style="color: #ffd700; border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-bottom: 0;">🔔 Yangiliklar</h3>
+        <div class="news-list" id="news-list-container">
+            <p style="color:#8b949e; text-align:center; margin-top:20px;">Hozircha yangiliklar yo'q.</p>
+        </div>
+        <button class="modal-close" onclick="closeNewsModal()">Yopish</button>
     </div>
 
     <div class="overlay" id="boostOverlay" onclick="closeBoostSheet()"></div>
@@ -372,54 +374,13 @@
             <div style="font-weight: bold; font-size: 18px; color: #2ea043;"><span id="sheetScoreDisplay">0</span> loot</div>
         </div>
         <div class="sheet-content" id="sheetContent">
-            <div class="booster-card">
-                <div class="task-left">
-                    <div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">👆</div>
-                    <div class="booster-info">
-                        <h4>Tap kuchi <span class="lvl-badge" id="sheet-tapLvlBadge">Lvl 1</span></h4>
-                        <p id="sheet-tapDesc">Har bir bosishda +1 loot</p>
-                        <p id="sheet-tapNext">Keyingisi: 2</p>
-                    </div>
-                </div>
-                <button class="booster-price" id="sheet-tapBtnPrice" onclick="buyBoost('tap')">15,000</button>
-            </div>
-            <div class="booster-card">
-                <div class="task-left">
-                    <div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">🔋</div>
-                    <div class="booster-info">
-                        <h4>Max energiya <span class="lvl-badge" id="sheet-energyLvlBadge">Lvl 1</span></h4>
-                        <p id="sheet-energyDesc">Maksimal energiya: 1000<br>Kunlik limit: 15,000</p>
-                        <p id="sheet-energyNext">Keyingisi: 2,000 energiya</p>
-                    </div>
-                </div>
-                <button class="booster-price" id="sheet-energyBtnPrice" onclick="buyBoost('energy')">20,000</button>
-            </div>
-            <div class="booster-card">
-                <div class="task-left">
-                    <div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">⚡</div>
-                    <div class="booster-info">
-                        <h4>Energiya tiklanishi <span class="lvl-badge" id="sheet-regenLvlBadge">Lvl 1</span></h4>
-                        <p id="sheet-regenDesc">Sekundiga +1 energiya</p>
-                        <p id="sheet-regenNext">Keyingisi: 2</p>
-                    </div>
-                </div>
-                <button class="booster-price" id="sheet-regenBtnPrice" onclick="buyBoost('regen')">25,000</button>
-            </div>
+            <div class="booster-card"><div class="task-left"><div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">👆</div><div class="booster-info"><h4>Tap kuchi <span class="lvl-badge" id="sheet-tapLvlBadge">Lvl 1</span></h4><p id="sheet-tapDesc">Har bir bosishda +1 loot</p><p id="sheet-tapNext">Keyingisi: 2</p></div></div><button class="booster-price" id="sheet-tapBtnPrice" onclick="buyBoost('tap')">15,000</button></div>
+            <div class="booster-card"><div class="task-left"><div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">🔋</div><div class="booster-info"><h4>Max energiya <span class="lvl-badge" id="sheet-energyLvlBadge">Lvl 1</span></h4><p id="sheet-energyDesc">Maksimal energiya: 1000</p><p id="sheet-energyNext">Keyingisi: 2,000</p></div></div><button class="booster-price" id="sheet-energyBtnPrice" onclick="buyBoost('energy')">20,000</button></div>
+            <div class="booster-card"><div class="task-left"><div class="task-icon-circle" style="background-color: #21262d; border: 1px solid #30363d;">⚡</div><div class="booster-info"><h4>Energiya tiklanishi <span class="lvl-badge" id="sheet-regenLvlBadge">Lvl 1</span></h4><p id="sheet-regenDesc">Sekundiga +1 energiya</p><p id="sheet-regenNext">Keyingisi: 2</p></div></div><button class="booster-price" id="sheet-regenBtnPrice" onclick="buyBoost('regen')">25,000</button></div>
         </div>
     </div>
 
-    <div class="modal" id="rulesModal">
-        <h3 style="color:#e74c3c;">❓ QANDAY QILIB UC OLINADI?</h3>
-        <p style="margin-top: 10px; font-size: 14px; line-height: 1.4; color: #8b949e;">
-            <b>1.</b> O'yinda barabanni aylantirib, vazifalarni bajarib Loot to'plang.<br><br>
-            <b>2.</b> Do'kondan o'zingizga yetadigan paketni tanlang.<br><br>
-            <b>3.</b> PUBG ID va Nikingizni xatosiz kiriting va Tasdiqlashni bosing!
-        </p>
-        <p style="color: #e74c3c; margin-top: 15px; font-size: 12px;">⏳ Adminlar so'rovingizni tekshiradi va 24 soat ichida hisobingizga UC tashlab beriladi.</p>
-        <p style="color: #ffaa00; font-size: 12px; margin-top: 10px;">⚠️ <b>QOIDA:</b> Qalloblik aniqlansa, hisobingiz bloklanadi!</p>
-        <button class="modal-close" onclick="closeRulesModal()">Tushundim yopish</button>
-    </div>
-
+    <!-- SHAFFOF BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('tab-main', this)"><div class="nav-icon"><i class="fa-solid fa-gamepad"></i></div>Asosiy</div>
         <div class="nav-item" onclick="switchTab('tab-konkurs', this)"><div class="nav-icon"><i class="fa-solid fa-gift"></i></div>Konkurs</div>
@@ -432,98 +393,74 @@
 
     <script>
         document.getElementById('username_display').innerText = userName;
-        document.getElementById('transfer-id-display').innerText = userId; // Transfer ID kiritildi
+        document.getElementById('transfer-id-display').innerText = userId;
+
+        // BAZA API: QAYSI VAZIFALAR BAJARILGANINI OLISH (Anti-Nakrutka)
+        async function fetchUserTasks() {
+            try {
+                let targetUrl = `http://212.43.146.114:10000/get_user_tasks?userid=${userId}&t=${Date.now()}`;
+                let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                let result = await response.json();
+                if(result.success && result.tasks) {
+                    result.tasks.forEach(taskId => {
+                        let btn = document.getElementById('check-' + taskId + '-btn');
+                        if(btn) {
+                            btn.innerHTML = '<i class="fa-solid fa-check"></i> Bajarildi';
+                            btn.style.backgroundColor = '#2ea043';
+                            btn.style.color = '#fff';
+                            btn.disabled = true;
+                            moveTaskToBottom(taskId);
+                        }
+                    });
+                }
+            } catch(e) {}
+        }
+        fetchUserTasks();
 
         let savedScore = parseInt(localStorage.getItem('ghost_score_' + userId));
         let urlScore = parseInt(urlParams.get('score'));
-        let score = 0;
-        
-        if (!isNaN(urlScore) && urlScore > (isNaN(savedScore) ? -1 : savedScore)) {
-            score = urlScore;
-        } else if (!isNaN(savedScore)) {
-            score = savedScore;
-        }
+        let score = (!isNaN(urlScore) && urlScore > (isNaN(savedScore) ? -1 : savedScore)) ? urlScore : (isNaN(savedScore) ? 0 : savedScore);
 
         let urlEnergy = parseInt(urlParams.get('energy')) || 1000;
         let urlLimit = parseInt(urlParams.get('limit')) || 15000;
-        let urlTap = parseInt(urlParams.get('tap')) || 0;
-        let urlEng = parseInt(urlParams.get('eng')) || 0;
-        let urlReg = parseInt(urlParams.get('reg')) || 0;
-        let urlRefs = parseInt(urlParams.get('refs')) || 0; 
-
-        let savedEnergy = parseInt(localStorage.getItem('ghost_energy_' + userId));
-        let savedLimit = parseInt(localStorage.getItem('ghost_limit_' + userId));
-        let savedTap = parseInt(localStorage.getItem('ghost_tap_' + userId)) || 0;
-        let savedEng = parseInt(localStorage.getItem('ghost_eng_' + userId)) || 0;
-        let savedReg = parseInt(localStorage.getItem('ghost_reg_' + userId)) || 0;
-        let savedRefs = parseInt(localStorage.getItem('ghost_refs_' + userId)) || 0;
-
-        let refs = Math.max(urlRefs, savedRefs); 
-        document.getElementById('my-friends-count').innerText = refs; // Do'stlar sonini ekranga yozish
-        
         let userUpgrades = {
-            tap: Math.max(urlTap, savedTap),
-            energy: Math.max(urlEng, savedEng),
-            regen: Math.max(urlReg, savedReg)
+            tap: Math.max(parseInt(urlParams.get('tap')) || 0, parseInt(localStorage.getItem('ghost_tap_' + userId)) || 0),
+            energy: Math.max(parseInt(urlParams.get('eng')) || 0, parseInt(localStorage.getItem('ghost_eng_' + userId)) || 0),
+            regen: Math.max(parseInt(urlParams.get('reg')) || 0, parseInt(localStorage.getItem('ghost_reg_' + userId)) || 0)
         };
-        let energy = isNaN(savedEnergy) ? urlEnergy : savedEnergy; 
-        let dailyLimit = isNaN(savedLimit) ? urlLimit : savedLimit;
+        let energy = parseInt(localStorage.getItem('ghost_energy_' + userId));
+        energy = isNaN(energy) ? urlEnergy : energy;
+        let dailyLimit = parseInt(localStorage.getItem('ghost_limit_' + userId));
+        dailyLimit = isNaN(dailyLimit) ? urlLimit : dailyLimit;
+
+        let refs = Math.max(parseInt(urlParams.get('refs')) || 0, parseInt(localStorage.getItem('ghost_refs_' + userId)) || 0);
+        document.getElementById('my-friends-count').innerText = refs;
 
         const shopData = {
             tap: { levels: [1, 2, 4, 8, 16, 25, 40, 60, 90, 150], prices: [15000, 45000, 120000, 300000, 750000, 1500000, 3000000, 7500000, 15000000] },
             energy: { max: [1000, 2000, 3500, 5000, 7000, 10000, 15000, 25000, 40000, 60000], limit: [15000, 30000, 52500, 75000, 100000, 150000, 250000, 400000, 650000, 1000000], prices: [20000, 60000, 150000, 400000, 900000, 2000000, 4500000, 10000000, 20000000] },
             regen: { levels: [1, 2, 3, 4, 5, 7, 10, 15, 20, 30], prices: [25000, 75000, 200000, 500000, 1200000, 2500000, 5000000, 12000000, 25000000] }
         };
-
         userUpgrades.tap = Math.min(userUpgrades.tap, shopData.tap.levels.length - 1);
         userUpgrades.energy = Math.min(userUpgrades.energy, shopData.energy.max.length - 1);
         userUpgrades.regen = Math.min(userUpgrades.regen, shopData.regen.levels.length - 1);
-
         let maxEnergy = shopData.energy.max[userUpgrades.energy];
 
         const scoreEl = document.getElementById('score');
         const energyTextEl = document.getElementById('energyText');
         const limitTextEl = document.getElementById('limitText');
         const energyBarEl = document.getElementById('energyBar');
-        const tapBtn = document.getElementById('tapBtn');
-        const maxEnergyTextEl = document.getElementById('maxEnergyText');
 
         function initSecureDailyLimit() {
             let todayString = new Date().toLocaleDateString(); 
-            let lastPlayedDay = localStorage.getItem('loottap_last_day_' + userId);
-
-            if (lastPlayedDay !== todayString) {
+            if (localStorage.getItem('loottap_last_day_' + userId) !== todayString) {
                 dailyLimit = shopData.energy.limit[userUpgrades.energy];
                 localStorage.setItem('loottap_last_day_' + userId, todayString);
-                localStorage.setItem('ghost_limit_' + userId, dailyLimit);
-                limitTextEl.innerText = dailyLimit.toLocaleString();
             }
-
-            let realTime = Date.now();
-            let lastTime = parseInt(localStorage.getItem('ghost_last_time_' + userId)) || realTime;
-            let secondsOffline = Math.floor((realTime - lastTime) / 1000);
-            let offlineRegen = secondsOffline * shopData.regen.levels[userUpgrades.regen];
-            
-            if (secondsOffline > 0 && secondsOffline < 31536000) { 
-                energy += offlineRegen;
-                if (energy > maxEnergy) energy = maxEnergy;
-                updateEnergyUI();
-            }
+            let offlineSecs = Math.floor((Date.now() - (parseInt(localStorage.getItem('ghost_last_time_' + userId)) || Date.now())) / 1000);
+            if (offlineSecs > 0 && offlineSecs < 31536000) energy = Math.min(energy + offlineSecs * shopData.regen.levels[userUpgrades.regen], maxEnergy);
         }
         initSecureDailyLimit();
-
-        function ghostSave() {
-            localStorage.setItem('ghost_score_' + userId, score);
-            localStorage.setItem('ghost_energy_' + userId, Math.floor(energy));
-            localStorage.setItem('ghost_limit_' + dailyLimit);
-            localStorage.setItem('ghost_tap_' + userId, userUpgrades.tap);
-            localStorage.setItem('ghost_eng_' + userId, userUpgrades.energy);
-            localStorage.setItem('ghost_reg_' + userId, userUpgrades.regen);
-            localStorage.setItem('ghost_refs_' + userId, refs); 
-            localStorage.setItem('ghost_last_time_' + userId, Date.now()); 
-        }
-
-        setInterval(() => { ghostSave(); }, 2000);
 
         function updateScoreDisplays() {
             let formatted = score.toLocaleString();
@@ -533,30 +470,67 @@
 
         function updateEnergyUI() {
             energyTextEl.innerText = Math.floor(energy);
-            maxEnergyTextEl.innerText = maxEnergy;
-            const percentage = (energy / maxEnergy) * 100;
-            energyBarEl.style.width = `${percentage}%`;
+            document.getElementById('maxEnergyText').innerText = maxEnergy;
+            energyBarEl.style.width = `${(energy / maxEnergy) * 100}%`;
         }
+
+        function ghostSave() {
+            localStorage.setItem('ghost_score_' + userId, score);
+            localStorage.setItem('ghost_energy_' + userId, Math.floor(energy));
+            localStorage.setItem('ghost_limit_' + userId, dailyLimit);
+            localStorage.setItem('ghost_tap_' + userId, userUpgrades.tap);
+            localStorage.setItem('ghost_eng_' + userId, userUpgrades.energy);
+            localStorage.setItem('ghost_reg_' + userId, userUpgrades.regen);
+            localStorage.setItem('ghost_refs_' + userId, refs); 
+            localStorage.setItem('ghost_last_time_' + userId, Date.now()); 
+        }
+        setInterval(ghostSave, 2000);
 
         updateScoreDisplays();
         limitTextEl.innerText = dailyLimit.toLocaleString();
         updateEnergyUI();
 
-        // ======= VAZIFALAR API (Anti-Nakrutka) =======
-        function goToTask(taskId, url) {
-            if(tg && tg.openLink) { tg.openLink(url); } else { window.open(url, '_blank'); }
+        // YANGILIKLAR API (Qo'ng'iroqcha)
+        async function fetchNews() {
+            try {
+                let targetUrl = `http://212.43.146.114:10000/get_news?t=${Date.now()}`;
+                let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                let result = await response.json();
+                if(result.success && result.news.length > 0) {
+                    document.getElementById('news-badge').style.display = 'flex';
+                    document.getElementById('news-badge').innerText = result.news.length;
+                    let html = '';
+                    result.news.forEach(n => {
+                        html += `<div class="news-item"><div class="news-text">${n.text}</div><div class="news-date">${n.date}</div></div>`;
+                    });
+                    document.getElementById('news-list-container').innerHTML = html;
+                } else {
+                    document.getElementById('news-badge').style.display = 'none';
+                    document.getElementById('news-list-container').innerHTML = `<p style="color:#8b949e; text-align:center;">Hozircha yangiliklar yo'q.</p>`;
+                }
+            } catch(e){}
+        }
+        fetchNews();
+        setInterval(fetchNews, 30000);
+
+        function openNewsModal() {
+            document.getElementById('newsOverlay').style.display = 'block';
+            document.getElementById('newsModal').style.display = 'flex';
+            setTimeout(() => { document.getElementById('newsOverlay').classList.add('show'); document.getElementById('newsModal').classList.add('show'); }, 10);
+        }
+        function closeNewsModal() {
+            document.getElementById('newsModal').classList.remove('show'); document.getElementById('newsOverlay').classList.remove('show');
+            setTimeout(() => { document.getElementById('newsModal').style.display = 'none'; document.getElementById('newsOverlay').style.display = 'none'; }, 300);
         }
 
+        // VAZIFALAR API (Anti-Nakrutka)
+        function goToTask(taskId, url) { if(tg && tg.openLink) { tg.openLink(url); } else { window.open(url, '_blank'); } }
+        
         async function checkTaskAPI(taskId) {
-            if(localStorage.getItem('task_done_' + taskId)) {
-                showToast("Siz bu vazifani allaqachon bajargansiz! ⚠️");
-                return;
-            }
-
             let btn = document.getElementById('check-' + taskId + '-btn');
+            if(btn.disabled) return showToast("Siz bu vazifani allaqachon bajargansiz! ⚠️");
             let originalText = btn.innerText;
-            btn.innerText = "Kuting...";
-            btn.disabled = true;
+            btn.innerText = "Kuting..."; btn.disabled = true;
 
             try {
                 let targetUrl = `http://212.43.146.114:10000/verify_task?userid=${userId}&task_id=${taskId}&t=${Date.now()}`;
@@ -565,236 +539,108 @@
                 
                 if (result.success) {
                     btn.innerHTML = '<i class="fa-solid fa-check"></i> Bajarildi';
-                    btn.style.backgroundColor = '#2ea043';
-                    btn.style.color = '#fff';
-                    
-                    score += result.reward;
-                    updateScoreDisplays();
-                    ghostSave();
-                    localStorage.setItem('task_done_' + taskId, 'true'); 
+                    btn.style.backgroundColor = '#2ea043'; btn.style.color = '#fff';
+                    score += result.reward; updateScoreDisplays(); ghostSave();
                     showToast(`Vazifa bajarildi! +${result.reward.toLocaleString()} loot ✅`);
                     setTimeout(() => { moveTaskToBottom(taskId); }, 500);
                 } else {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
+                    btn.innerText = originalText; btn.disabled = false;
                     showToast(`❌ Xato: ${result.msg}`);
                 }
-            } catch(e) {
-                btn.innerText = originalText;
-                btn.disabled = false;
-                showToast("Server bilan ulanishda xato!");
-            }
+            } catch(e) { btn.innerText = originalText; btn.disabled = false; showToast("Server bilan ulanishda xato!"); }
         }
+        function moveTaskToBottom(taskId) { let el = document.getElementById('task-' + taskId); if(el) document.getElementById('tasks-container').appendChild(el); }
 
-        function moveTaskToBottom(taskId) {
-            const container = document.getElementById('tasks-container');
-            const taskEl = document.getElementById('task-' + taskId);
-            if (container && taskEl) { container.appendChild(taskEl); }
-        }
-
-        function initTasks() {
-            ['kattahomiy','xalilovsales'].forEach(taskId => {
-                if(localStorage.getItem('task_done_' + taskId)) {
-                    let btn = document.getElementById('check-' + taskId + '-btn');
-                    if(btn) {
-                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Bajarildi';
-                        btn.style.backgroundColor = '#2ea043';
-                        btn.style.color = '#fff';
-                        btn.disabled = true;
-                    }
-                    moveTaskToBottom(taskId);
-                }
-            });
-        }
-        initTasks();
-        // ===========================================
-
-        function goToKonkurs(k_id) {
-            let url = document.getElementById(`konkurs${k_id}-obuna-btn`).getAttribute('data-link');
-            if(url) {
-                if(tg && tg.openLink) { tg.openLink(url); } else { window.open(url, '_blank'); }
-            }
-        }
-
-        function checkKonkurs(k_id) {
-            let botUsername = "IbodTapBot"; // BOTINGIZ NOMI
-            let url = `https://t.me/${botUsername}?start=konkurs${k_id}`;
-            window.Telegram.WebApp.openTelegramLink(url);
-            showToast(`Tekshirilmoqda (${k_id}), botga qayting! 🔄`);
-        }
+        // KONKURS 1 & 2
+        function goToKonkurs(k_id) { let url = document.getElementById(`konkurs${k_id}-obuna-btn`).getAttribute('data-link'); if(url && tg && tg.openLink) tg.openLink(url); }
+        function checkKonkurs(k_id) { window.Telegram.WebApp.openTelegramLink(`https://t.me/IbodTapBot?start=konkurs${k_id}`); showToast(`Tekshirilmoqda, botga qayting! 🔄`); }
 
         async function updateSingleKonkurs(k_id) {
             try {
-                const response = await fetch(`http://212.43.146.114:10000/konkurs${k_id}.json?t=` + new Date().getTime()); 
-                const data = await response.json();
-                
-                let countEl = document.getElementById(`konkurs${k_id}-count`);
-                let maxEl = document.getElementById(`konkurs${k_id}-max`);
-                
+                let response = await fetch(`http://212.43.146.114:10000/konkurs${k_id}.json?t=${Date.now()}`); 
+                let data = await response.json();
                 if(data && typeof data.count !== 'undefined') {
-                    countEl.innerText = data.count;
-                    let maxU = data.max_users || 1200;
-                    maxEl.innerText = maxU;
-                    
-                    if(data.title) { document.getElementById(`konkurs${k_id}-main-title`).innerText = data.title; }
-                    if(data.channel) {
-                        document.getElementById(`konkurs${k_id}-channel-name`).innerText = data.channel + " shu kanalga obuna bo'lasiz";
-                        document.getElementById(`konkurs${k_id}-obuna-btn`).setAttribute('data-link', data.link);
-                    }
+                    document.getElementById(`konkurs${k_id}-count`).innerText = data.count;
+                    document.getElementById(`konkurs${k_id}-max`).innerText = data.max_users || 1200;
+                    if(data.title) document.getElementById(`konkurs${k_id}-main-title`).innerText = data.title;
+                    if(data.subtitle) document.getElementById(`konkurs${k_id}-channel-name`).innerText = data.subtitle;
+                    if(data.channel) document.getElementById(`konkurs${k_id}-obuna-btn`).setAttribute('data-link', data.link);
                     if(data.message && data.message.trim() !== "") {
-                        document.getElementById(`konkurs${k_id}-msg-box`).style.display = 'block';
-                        document.getElementById(`konkurs${k_id}-msg-text`).innerText = data.message;
+                        document.getElementById(`konkurs${k_id}-msg-box`).style.display = 'block'; document.getElementById(`konkurs${k_id}-msg-text`).innerText = data.message;
                     } else { document.getElementById(`konkurs${k_id}-msg-box`).style.display = 'none'; }
-
-                    if(data.count >= maxU) {
+                    if(data.count >= (data.max_users || 1200)) {
                         document.getElementById(`konkurs${k_id}-status`).innerHTML = `<span style="color:#e74c3c;">Konkurs yakunlandi! 🛑</span>`;
-                        document.getElementById(`konkurs${k_id}-check-btn`).disabled = true;
-                        document.getElementById(`konkurs${k_id}-check-btn`).style.backgroundColor = '#30363d';
+                        document.getElementById(`konkurs${k_id}-check-btn`).disabled = true; document.getElementById(`konkurs${k_id}-check-btn`).style.backgroundColor = '#30363d';
                     }
                 }
             } catch (err) {}
         }
+        function loadKonkursCount() { updateSingleKonkurs(1); updateSingleKonkurs(2); }
+        loadKonkursCount(); setInterval(loadKonkursCount, 10000);
 
-        function loadKonkursCount() {
-            updateSingleKonkurs(1);
-            updateSingleKonkurs(2);
-        }
-        loadKonkursCount();
-        setInterval(loadKonkursCount, 10000);
-
-        function renderShop() {
-            let tLvl = userUpgrades.tap, tBadge = `Lvl ${tLvl + 1}`;
-            let tDesc = `Har bir bosishda +${shopData.tap.levels[tLvl]} loot`;
-            let tNextText = tLvl < shopData.tap.prices.length ? `Keyingisi: ${shopData.tap.levels[tLvl + 1]}` : "Maksimal daraja";
-            let tBtnText = tLvl < shopData.tap.prices.length ? shopData.tap.prices[tLvl].toLocaleString() : "MAX";
-            let tDisabled = tLvl >= shopData.tap.prices.length;
-            document.getElementById('sheet-tapLvlBadge').innerText = tBadge; document.getElementById('sheet-tapDesc').innerText = tDesc; document.getElementById('sheet-tapNext').innerText = tNextText;
-            let stBtn = document.getElementById('sheet-tapBtnPrice'); stBtn.innerText = tBtnText; stBtn.disabled = tDisabled; stBtn.style.backgroundColor = tDisabled ? "#c4c4c4" : "#2ea043";
-
-            let eLvl = userUpgrades.energy, eBadge = `Lvl ${eLvl + 1}`;
-            let eDesc = `Maksimal energiya: ${shopData.energy.max[eLvl].toLocaleString()}<br>Kunlik limit: ${shopData.energy.limit[eLvl].toLocaleString()}`;
-            let eNextText = eLvl < shopData.energy.prices.length ? `Keyingisi: ${shopData.energy.max[eLvl + 1].toLocaleString()} energiya` : "Maksimal daraja";
-            let eBtnText = eLvl < shopData.energy.prices.length ? shopData.energy.prices[eLvl].toLocaleString() : "MAX";
-            let eDisabled = eLvl >= shopData.energy.prices.length;
-            document.getElementById('sheet-energyLvlBadge').innerText = eBadge; document.getElementById('sheet-energyDesc').innerHTML = eDesc; document.getElementById('sheet-energyNext').innerText = eNextText;
-            let seBtn = document.getElementById('sheet-energyBtnPrice'); seBtn.innerText = eBtnText; seBtn.disabled = eDisabled; seBtn.style.backgroundColor = eDisabled ? "#c4c4c4" : "#2ea043";
-
-            let rLvl = userUpgrades.regen, rBadge = `Lvl ${rLvl + 1}`;
-            let rDesc = `Sekundiga +${shopData.regen.levels[rLvl]} energiya`;
-            let rNextText = rLvl < shopData.regen.prices.length ? `Keyingisi: ${shopData.regen.levels[rLvl + 1]}` : "Maksimal daraja";
-            let rBtnText = rLvl < shopData.regen.prices.length ? shopData.regen.prices[rLvl].toLocaleString() : "MAX";
-            let rDisabled = rLvl >= shopData.regen.prices.length;
-            document.getElementById('sheet-regenLvlBadge').innerText = rBadge; document.getElementById('sheet-regenDesc').innerText = rDesc; document.getElementById('sheet-regenNext').innerText = rNextText;
-            let srBtn = document.getElementById('sheet-regenBtnPrice'); srBtn.innerText = rBtnText; srBtn.disabled = rDisabled; srBtn.style.backgroundColor = rDisabled ? "#c4c4c4" : "#2ea043";
-        }
-        renderShop();
-
-        function buyBoost(type) {
-            let currentLvl = userUpgrades[type], price = shopData[type].prices[currentLvl];
-            if (price === undefined) return showToast("Maksimal darajaga yetgansiz! ⚠️"); 
-            if (score >= price) {
-                score -= price; userUpgrades[type]++;
-                if(type === 'energy') {
-                    let oldLimit = shopData.energy.limit[currentLvl], newLimit = shopData.energy.limit[userUpgrades.energy];
-                    dailyLimit += (newLimit - oldLimit); maxEnergy = shopData.energy.max[userUpgrades.energy];
-                }
-                updateScoreDisplays(); limitTextEl.innerText = dailyLimit.toLocaleString(); updateEnergyUI(); renderShop(); 
-                ghostSave();
-                showToast("Muvaffaqiyatli xarid qilindi! ✅");
-            } else { showToast("Hisobingizda yetarli loot mavjud emas! ❌"); }
+        // DO'KON VA O'TKAZMA
+        let selectedItemPrice = 6000000, selectedItemAmount = '60 UC';
+        function selectItem(el, price, amt) {
+            el.parentElement.querySelectorAll('.uc-box').forEach(b => b.classList.remove('active'));
+            el.classList.add('active'); selectedItemPrice = price; selectedItemAmount = amt;
         }
 
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.app-tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            element.classList.add('active');
+        async function requestApiWithdraw() {
+            let id = document.getElementById('uc-id').value, nick = document.getElementById('uc-nick').value, contact = document.getElementById('uc-contact').value;
+            if (id === "" || nick === "" || contact === "") return showToast("Barcha maydonlarni to'ldiring! ⚠️");
+            if (score >= selectedItemPrice) {
+                try {
+                    let targetUrl = `http://212.43.146.114:10000/buy_uc?userid=${userId}&price=${selectedItemPrice}&uc_amount=${selectedItemAmount}&pubg_id=${id}&pubg_nick=${nick}&contact=${contact}&t=${Date.now()}`;
+                    let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                    let result = await response.json();
+                    if (result.success) {
+                        score -= selectedItemPrice; updateScoreDisplays(); ghostSave();
+                        showToast(`So'rov yuborildi! ✅`);
+                    } else showToast(`❌ Xato: ${result.msg}`);
+                } catch(e) { showToast("Serverda xatolik!"); }
+            } else showToast("Hisobingizda yetarli loot mavjud emas! ❌");
         }
 
-        let selectedItemPrice = 6000000;
-        let selectedItemAmount = '60 UC';
-        function selectItem(element, price, amountStr) {
-            let parent = element.parentElement;
-            parent.querySelectorAll('.uc-box').forEach(box => box.classList.remove('active'));
-            element.classList.add('active');
-            selectedItemPrice = price;
-            selectedItemAmount = amountStr;
+        // P2P ID Ism Qidirish (Debounce bilan)
+        let nameTimeout;
+        async function fetchUserName(targetId) {
+            let disp = document.getElementById('transfer-name-display');
+            disp.innerText = "";
+            if(targetId.length < 5) return;
+            clearTimeout(nameTimeout);
+            nameTimeout = setTimeout(async () => {
+                disp.style.color = "#8b949e"; disp.innerText = "Qidirilmoqda...";
+                try {
+                    let url = `http://212.43.146.114:10000/get_name?target_id=${targetId}&t=${Date.now()}`;
+                    let res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                    let data = await res.json();
+                    if(data.success) { disp.style.color = "#2ea043"; disp.innerText = "👤 " + data.name; } 
+                    else { disp.style.color = "#e74c3c"; disp.innerText = "O'yinchi topilmadi!"; }
+                } catch(e) { disp.innerText = ""; }
+            }, 800);
         }
 
-        // ======= API ORQALI DO'KONDAN XARID QILISH =======
-        async function sendTransfer() {
+        async function sendTransferAPI() {
             let toId = document.getElementById('transfer-to-id').value;
             let amount = document.getElementById('transfer-amount').value;
-            
             if (toId === "" || amount === "") return showToast("Barcha maydonlarni to'ldiring!");
             
             try {
                 let targetUrl = `http://212.43.146.114:10000/transfer_loot?from_user=${userId}&to_user=${toId}&amount=${amount}&t=${Date.now()}`;
                 let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
                 let result = await response.json();
-                
                 if (result.success) {
                     score -= parseInt(amount); updateScoreDisplays(); ghostSave();
-                    showToast(`✅ Muvaqqiyatli! Do'stingizga ${amount} loot o'tkazildi!`);
-                    document.getElementById('transfer-to-id').value = "";
-                    document.getElementById('transfer-amount').value = "";
-                } else {
-                    showToast(`❌ Xato: ${result.msg}`);
-                }
+                    showToast(`✅ Muvaffaqiyatli! ${amount} loot o'tkazildi!`);
+                    document.getElementById('transfer-to-id').value = ""; document.getElementById('transfer-amount').value = "";
+                    document.getElementById('transfer-name-display').innerText = "";
+                } else showToast(`❌ Xato: ${result.msg}`);
             } catch(e) { showToast("Serverda xatolik yuz berdi!"); }
-        }
-
-        // ======= P2P O'TKAZMA (API) =======
-        async function sendTransfer() {
-            let toId = document.getElementById('transfer-to-id').value;
-            let amount = document.getElementById('transfer-amount').value;
-            
-            if (toId === "" || amount === "") return showToast("Barcha maydonlarni to'ldiring!");
-            
-            try {
-                let response = await fetch(`http://212.43.146.114:10000/transfer_loot?from_user=${userId}&to_user=${toId}&amount=${amount}`);
-                let result = await response.json();
-                
-                if (result.success) {
-                    score -= parseInt(amount); updateScoreDisplays(); ghostSave();
-                    showToast(`✅ Muvaqqiyatli! Do'stingizga ${amount} loot o'tkazildi!`);
-                    document.getElementById('transfer-to-id').value = "";
-                    document.getElementById('transfer-amount').value = "";
-                } else {
-                    showToast(`❌ Xato: ${result.msg}`);
-                }
-            } catch(e) { showToast("Serverda xatolik yuz berdi!"); }
-        }
-
-        let selectedRefCost = {cost: 60, name: "60 UC"};
-        function selectRefItem(element, cost, prizeName) {
-            let parent = element.parentElement;
-            parent.querySelectorAll('.ref-box').forEach(box => box.classList.remove('active'));
-            element.classList.add('active');
-            selectedRefCost = {cost: cost, name: prizeName};
-        }
-
-        function requestRefWithdraw() {
-            let id = document.getElementById('ref-uc-id').value, nick = document.getElementById('ref-uc-nick').value;
-            if (id === "" || nick === "") return showToast("PUBG ID va NIK ni kiriting! ⚠️");
-
-            let cost = selectedRefCost.cost;
-            let prizeName = selectedRefCost.name.replace(" ", "");
-            let safeNick = nick.replace(/[^a-zA-Z0-9]/g, ''); if (safeNick === "") safeNick = "Nomsiz";
-            let botUsername = "IbodTapBot"; // O'ZINGIZNING BOTINGIZ
-            
-            let url = `https://t.me/${botUsername}?start=refwithdraw_${prizeName}_${cost}_${id}_${safeNick}`;
-            window.Telegram.WebApp.openTelegramLink(url);
-            showToast("Tekshirilmoqda... Botingizga qayting! 🔄");
         }
 
         function copyRefLink() {
-            let botUsername = "IbodTapBot"; // O'ZINGIZNING BOTINGIZ
-            let refLink = `https://t.me/${botUsername}?start=ref_${userId}`;
-            let shareText = `🎮 PUBG UC ishlash endi juda oson!\nBot orqali Loot to'plang va ularni UC ga almashtiring 💎\n\nKiring va sovg'a oling! 👇`;
-            let shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(shareText)}`;
-            
-            if (tg && tg.openTelegramLink) { tg.openTelegramLink(shareUrl); } else { window.open(shareUrl, '_blank'); }
+            let shareUrl = `https://t.me/share/url?url=https://t.me/IbodTapBot?start=ref_${userId}&text=🎮 PUBG UC ishlash endi juda oson!\nKiring va sovg'a oling! 👇`;
+            if (tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl); else window.open(shareUrl, '_blank');
         }
 
         function handleTap(e) {
@@ -804,157 +650,108 @@
                 updateScoreDisplays(); limitTextEl.innerText = dailyLimit.toLocaleString(); updateEnergyUI();
                 ghostSave();
                 let touchX = e.clientX || (e.touches && e.touches[0].clientX), touchY = e.clientY || (e.touches && e.touches[0].clientY);
-                if(!touchX) { const rect = tapBtn.getBoundingClientRect(); touchX = rect.left + rect.width / 2; touchY = rect.top + rect.height / 2; }
+                if(!touchX) { const rect = document.getElementById('tapBtn').getBoundingClientRect(); touchX = rect.left + rect.width / 2; touchY = rect.top + rect.height / 2; }
                 
-                // Animatsiyani oldinga chiqarish
+                // Old qatlamdagi animatsiya!
                 const floatNum = document.createElement('div'); floatNum.className = 'floating-number'; floatNum.innerText = '+' + tapPower; floatNum.style.left = `${touchX - 10}px`; floatNum.style.top = `${touchY - 20}px`;
                 document.body.appendChild(floatNum); setTimeout(() => { floatNum.remove(); }, 1000);
                 if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             }
         }
-        tapBtn.addEventListener('mousedown', handleTap);
-        tapBtn.addEventListener('touchstart', (e) => { e.preventDefault(); for(let i=0; i < e.touches.length; i++) handleTap(e.touches[i]); });
+        document.getElementById('tapBtn').addEventListener('mousedown', handleTap);
+        document.getElementById('tapBtn').addEventListener('touchstart', (e) => { e.preventDefault(); for(let i=0; i<e.touches.length; i++) handleTap(e.touches[i]); });
+        setInterval(() => { if (energy < maxEnergy) { energy = Math.min(energy + shopData.regen.levels[userUpgrades.regen], maxEnergy); updateEnergyUI(); } }, 1000);
 
-        setInterval(() => {
-            let regenAmount = shopData.regen.levels[userUpgrades.regen];
-            if (energy < maxEnergy) {
-                energy += regenAmount; if(energy > maxEnergy) energy = maxEnergy;
-                updateEnergyUI();
-            }
-        }, 1000);
-
-        let isSpinView = false;
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            element.classList.add('active');
+        }
         function toggleScreen() {
-            isSpinView = !isSpinView;
-            const sTap = document.getElementById('screenTap'), sSpin = document.getElementById('screenSpin');
-            const sTab = document.getElementById('sideTab'), arrow = document.getElementById('tabArrow');
-            const txt = document.getElementById('tabText'), enWrap = document.getElementById('energyWrapper');
-            if (isSpinView) {
-                sTap.style.transform = 'translateX(-100%)'; sSpin.style.transform = 'translateX(-100%)';
-                sTab.classList.add('moved-left'); arrow.innerText = '›'; txt.innerText = 'Tap'; enWrap.style.display = 'none'; 
-            } else {
-                sTap.style.transform = 'translateX(0)'; sSpin.style.transform = 'translateX(0)';
-                sTab.classList.remove('moved-left'); arrow.innerText = '‹'; txt.innerText = 'Spin'; enWrap.style.display = 'block';
-            }
+            let isSpin = document.getElementById('sideTab').classList.contains('moved-left');
+            document.getElementById('screenTap').style.transform = isSpin ? 'translateX(0)' : 'translateX(-100%)';
+            document.getElementById('screenSpin').style.transform = isSpin ? 'translateX(0)' : 'translateX(-100%)';
+            document.getElementById('energyWrapper').style.display = isSpin ? 'block' : 'none';
+            if(isSpin) { document.getElementById('sideTab').classList.remove('moved-left'); document.getElementById('tabArrow').innerText = '‹'; document.getElementById('tabText').innerText = 'Spin'; }
+            else { document.getElementById('sideTab').classList.add('moved-left'); document.getElementById('tabArrow').innerText = '›'; document.getElementById('tabText').innerText = 'Tap'; }
         }
 
+        // BARABAN (QOTMASLIK VA TAYMER)
         const prizes = [
-            { id: 0, name: '500k', value: 500000 },
-            { id: 1, name: '200k', value: 200000 },
-            { id: 2, name: '300k', value: 300000 },
-            { id: 3, name: '200k', value: 200000 },
-            { id: 4, name: '500k', value: 500000 },
-            { id: 5, name: '200k', value: 200000 },
-            { id: 6, name: '300k', value: 300000 },
-            { id: 7, name: '200k', value: 200000 }
+            { id: 0, name: '500k', value: 500000 }, { id: 1, name: '200k', value: 200000 },
+            { id: 2, name: '300k', value: 300000 }, { id: 3, name: '200k', value: 200000 },
+            { id: 4, name: '500k', value: 500000 }, { id: 5, name: '200k', value: 200000 },
+            { id: 6, name: '300k', value: 300000 }, { id: 7, name: '200k', value: 200000 }
         ];
-
         let isSpinning = false, currentRotation = 0, countdownInterval;
         
         function startSpin() {
             if (isSpinning) return;
-            
-            const btn = document.getElementById('spinActionBtn');
-            btn.innerText = "Tekshirilmoqda...";
-            btn.className = "spin-btn-disabled";
-
-            let realTime = Date.now();
             let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin_' + userId)) || 0;
-            
-            if(realTime < nextSpinTime) {
-                showToast("24 soatda faqat 1 marta!");
-                checkSpinStatus();
-                return;
-            }
+            if(Date.now() < nextSpinTime) return showToast("24 soatda faqat 1 marta!");
             
             isSpinning = true;
-            nextSpinTime = realTime + (24 * 60 * 60 * 1000);
+            document.getElementById('spinActionBtn').className = "spin-btn-disabled";
+            document.getElementById('spinActionBtn').innerText = "Aylanmoqda...";
+            
+            nextSpinTime = Date.now() + (24 * 60 * 60 * 1000);
             localStorage.setItem('loottap_next_spin_' + userId, nextSpinTime);
             
-            const wheel = document.getElementById('wheel');
-            
-            let randPercent = Math.random() * 100;
-            let randIndex;
-            if (randPercent < 18.75) randIndex = 1; 
-            else if (randPercent < 37.5) randIndex = 3; 
-            else if (randPercent < 56.25) randIndex = 5; 
-            else if (randPercent < 75) randIndex = 7; 
-            else if (randPercent < 85) randIndex = 2; 
-            else if (randPercent < 95) randIndex = 6; 
-            else if (randPercent < 97.5) randIndex = 0; 
-            else randIndex = 4;
+            let randPercent = Math.random() * 100, randIndex;
+            if (randPercent < 18.75) randIndex = 1; else if (randPercent < 37.5) randIndex = 3; 
+            else if (randPercent < 56.25) randIndex = 5; else if (randPercent < 75) randIndex = 7; 
+            else if (randPercent < 85) randIndex = 2; else if (randPercent < 95) randIndex = 6; 
+            else if (randPercent < 97.5) randIndex = 0; else randIndex = 4;
 
-            const prize = prizes[randIndex];
             const sliceCenter = 22.5 + (randIndex * 45);
-            const offset = Math.floor(Math.random() * 30) - 15;
-            
-            const absoluteTarget = 90 - sliceCenter + offset;
-            const extraSpins = 360 * 5;
-            const baseRotation = Math.ceil(currentRotation / 360) * 360;
-            const targetRotation = baseRotation + extraSpins + absoluteTarget;
-            
-            wheel.style.transform = `rotate(${targetRotation}deg)`; 
+            const targetRotation = Math.ceil(currentRotation / 360) * 360 + 1800 + (90 - sliceCenter + (Math.floor(Math.random()*30)-15));
+            document.getElementById('wheel').style.transform = `rotate(${targetRotation}deg)`; 
             currentRotation = targetRotation;
-            btn.innerText = "Aylantirilmoqda...";
             
             setTimeout(() => {
-                score += prize.value; updateScoreDisplays(); ghostSave();
-                showToast(`🎉 Tabriklaymiz! Sizga ${prize.name} loot tushdi!`); checkSpinStatus();
+                score += prizes[randIndex].value; updateScoreDisplays(); ghostSave();
+                showToast(`🎉 Tabriklaymiz! Sizga ${prizes[randIndex].name} loot tushdi!`); 
+                checkSpinStatus(); // Taymerni darhol boshlash!
             }, 4000); 
         }
 
         function checkSpinStatus() {
-            let nextSpinTime = parseInt(localStorage.getItem('loottap_next_spin_' + userId)) || 0;
+            let nextTime = parseInt(localStorage.getItem('loottap_next_spin_' + userId)) || 0;
             const btn = document.getElementById('spinActionBtn'); 
-            let now = Date.now();
+            clearInterval(countdownInterval);
             
-            if (now < nextSpinTime) {
+            if (Date.now() < nextTime) {
                 isSpinning = true; btn.className = "spin-btn-disabled";
-                clearInterval(countdownInterval);
                 countdownInterval = setInterval(() => {
-                    now += 1000; 
-                    let timeLeft = Math.floor((nextSpinTime - now) / 1000);
-                    if (timeLeft <= 0) {
-                        clearInterval(countdownInterval); btn.className = "spin-btn-active"; btn.innerText = "Aylantirish"; isSpinning = false;
-                    } else {
-                        const h = Math.floor(timeLeft / 3600).toString().padStart(2, '0'), m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0'), s = (timeLeft % 60).toString().padStart(2, '0');
-                        btn.innerText = `Keyingi: ${h}:${m}:${s}`;
-                    }
+                    let left = Math.floor((nextTime - Date.now()) / 1000);
+                    if (left <= 0) { clearInterval(countdownInterval); btn.className = "spin-btn-active"; btn.innerText = "Aylantirish"; isSpinning = false; } 
+                    else btn.innerText = `Keyingi: ${Math.floor(left/3600).toString().padStart(2,'0')}:${Math.floor((left%3600)/60).toString().padStart(2,'0')}:${(left%60).toString().padStart(2,'0')}`;
                 }, 1000);
-            } else {
-                btn.className = "spin-btn-active"; btn.innerText = "Aylantirish"; isSpinning = false;
-            }
+            } else { btn.className = "spin-btn-active"; btn.innerText = "Aylantirish"; isSpinning = false; }
         }
         checkSpinStatus();
-        
-        function openBoostSheet() {
-            if(document.getElementById('sheetScoreDisplay')) document.getElementById('sheetScoreDisplay').innerText = score.toLocaleString();
-            document.getElementById('boostOverlay').style.display = 'block';
-            setTimeout(() => { document.getElementById('boostOverlay').classList.add('show'); document.getElementById('boostSheet').classList.add('open'); }, 10);
-        }
 
-        function closeBoostSheet() {
-            document.getElementById('boostSheet').classList.remove('open'); document.getElementById('boostOverlay').classList.remove('show');
-            setTimeout(() => { document.getElementById('boostOverlay').style.display = 'none'; }, 300);
+        // Boost Menu
+        function renderShop() {
+            let tLvl = userUpgrades.tap, eLvl = userUpgrades.energy, rLvl = userUpgrades.regen;
+            document.getElementById('sheet-tapBtnPrice').innerText = tLvl < shopData.tap.prices.length ? shopData.tap.prices[tLvl].toLocaleString() : "MAX";
+            document.getElementById('sheet-energyBtnPrice').innerText = eLvl < shopData.energy.prices.length ? shopData.energy.prices[eLvl].toLocaleString() : "MAX";
+            document.getElementById('sheet-regenBtnPrice').innerText = rLvl < shopData.regen.prices.length ? shopData.regen.prices[rLvl].toLocaleString() : "MAX";
         }
-
-        function openRulesModal() {
-            document.getElementById('boostOverlay').style.display = 'block';
-            document.getElementById('rulesModal').style.display = 'block';
-            setTimeout(() => { document.getElementById('boostOverlay').classList.add('show'); document.getElementById('rulesModal').classList.add('show'); }, 10);
+        renderShop();
+        function buyBoost(t) {
+            let lvl = userUpgrades[t], p = shopData[t].prices[lvl];
+            if (!p) return showToast("MAX!"); 
+            if (score >= p) {
+                score -= p; userUpgrades[t]++;
+                if(t === 'energy') { dailyLimit += (shopData.energy.limit[userUpgrades.energy] - shopData.energy.limit[lvl]); maxEnergy = shopData.energy.max[userUpgrades.energy]; }
+                updateScoreDisplays(); limitTextEl.innerText = dailyLimit.toLocaleString(); updateEnergyUI(); renderShop(); ghostSave(); showToast("Xarid qilindi! ✅");
+            } else showToast("Loot yetarli emas! ❌");
         }
-
-        function closeRulesModal() {
-            document.getElementById('rulesModal').classList.remove('show');
-            document.getElementById('boostOverlay').classList.remove('show');
-            setTimeout(() => { document.getElementById('rulesModal').style.display = 'none'; document.getElementById('boostOverlay').style.display = 'none'; }, 300);
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toastNotification');
-            toast.innerText = message; toast.style.bottom = "80px"; 
-            setTimeout(() => { toast.style.bottom = "-100px"; }, 3000);
-        }
+        function openBoostSheet() { document.getElementById('boostOverlay').style.display='block'; setTimeout(()=>{ document.getElementById('boostOverlay').classList.add('show'); document.getElementById('boostSheet').classList.add('open'); },10); }
+        function closeBoostSheet() { document.getElementById('boostSheet').classList.remove('open'); document.getElementById('boostOverlay').classList.remove('show'); setTimeout(()=>document.getElementById('boostOverlay').style.display='none',300); }
+        function showToast(msg) { let t = document.getElementById('toastNotification'); t.innerText=msg; t.style.bottom="80px"; setTimeout(()=>t.style.bottom="-100px",3000); }
     </script>
 </body>
 </html>
