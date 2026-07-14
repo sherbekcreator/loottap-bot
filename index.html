@@ -18,7 +18,6 @@
         .user-info { font-size: 14px; color: #8b949e; margin-bottom: 10px; font-weight: bold; }
         .balance-container { display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 36px; font-weight: bold; }
         
-        /* OLMOS O'RNIGA UC ICON (Yoki rasm ulanadi) */
         .balance-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
         .balance-icon img { width: 100%; height: 100%; object-fit: contain; }
         
@@ -87,6 +86,9 @@
         .submit-btn { width: calc(100% - 40px); background-color: #2ea043; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; border: none; margin: 10px 20px; cursor: pointer; transition: 0.2s; }
         .submit-btn:active { transform: scale(0.98); }
         
+        .red-btn { background-color: #e74c3c; color: white; border-radius: 12px; padding: 14px; margin: 0 20px 15px 20px; font-weight: bold; font-size: 15px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
+        .invite-btn { background-color: #2ea043; color: white; border-radius: 12px; padding: 16px; margin: 10px 20px 10px 20px; font-weight: bold; font-size: 16px; border: none; text-align: center; cursor: pointer; display: block; width: calc(100% - 40px); }
+        
         /* Shaffof va Toza Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background: rgba(13, 17, 23, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 15px 10px 20px 10px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.05); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #8b949e; font-size: 11px; cursor: pointer; width: 20%; gap: 6px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8); transition: 0.3s; }
@@ -152,7 +154,6 @@
         <div class="header">
             <div class="user-info" id="username_display">LootTap O'yinchisi</div>
             <div class="balance-container">
-                <!-- UC rasm yoki tanga -->
                 <div class="balance-icon">
                     <img src="uc.png" alt="UC" onerror="this.style.display='none'; this.parentElement.innerText='🪙';">
                 </div>
@@ -160,7 +161,6 @@
             </div>
             <div class="daily-limit">Bugunlik limit: <span id="limitText">15,000</span></div>
             
-            <!-- YANGILIKLAR QO'NG'IROQCHASI -->
             <div class="bell-icon" onclick="openNewsModal()">
                 <i class="fa-solid fa-bell"></i>
                 <div class="bell-badge" id="news-badge">0</div>
@@ -211,14 +211,12 @@
         </div>
     </div>
 
-    <!-- KONKURS BO'LIMI -->
     <div id="tab-konkurs" class="app-tab">
         <div class="page-header">
             <h2>🏆 Ikkita Super Konkurs</h2>
             <p>Kanallarga obuna bo'ling va tekin UC yutib oling</p>
         </div>
 
-        <!-- 1-KONKURS -->
         <div style="background: #161b22; border: 2px solid #ffaa00; margin: 10px 20px 20px 20px; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);">
             <h3 id="konkurs1-main-title" style="color: #ffd700; margin-bottom: 5px; font-size: 18px;">🎁 1-Konkurs: Tekin UC</h3>
             <p id="konkurs1-channel-name" style="font-size: 13px; color: #8b949e; margin-bottom: 12px;">Yuklanmoqda...</p>
@@ -235,7 +233,6 @@
             <p id="konkurs1-msg-text" style="font-size: 13px; color: #fff; line-height: 1.4; white-space: pre-wrap;"></p>
         </div>
 
-        <!-- 2-KONKURS -->
         <div style="background: #161b22; border: 2px solid #3498db; margin: 10px 20px 20px 20px; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);">
             <h3 id="konkurs2-main-title" style="color: #3498db; margin-bottom: 5px; font-size: 18px;">🎁 2-Konkurs: Tekin UC</h3>
             <p id="konkurs2-channel-name" style="font-size: 13px; color: #8b949e; margin-bottom: 12px;">Yuklanmoqda...</p>
@@ -253,7 +250,6 @@
         </div>
     </div>
 
-    <!-- VAZIFALAR (API BAZA) -->
     <div id="tab-tasks" class="app-tab">
         <div class="page-header">
             <h2>Vazifalar</h2>
@@ -307,7 +303,6 @@
         </div>
     </div>
 
-    <!-- DO'STLAR VA O'TKAZMALAR -->
     <div id="tab-friends" class="app-tab">
         <div class="page-header" style="border: none; padding-bottom: 0;">
             <div style="font-size: 50px; margin-bottom: 5px;">🤝</div>
@@ -323,9 +318,9 @@
         <div class="section-title" style="text-align: center; margin-top:20px;">🤝 DO'STLARGA O'TKAZMA</div>
         <div class="transfer-box">
             <div class="transfer-my-id">Sizning ID: <span id="transfer-id-display">123456</span></div>
-            <!-- INPUTLARGA BLOK QO'YILDI -->
             <input type="text" placeholder="Do'stingizning ID raqami" id="transfer-to-id" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length > 15) this.value = this.value.slice(0,15); fetchUserName(this.value);" style="width: 100%; background-color: #0d1117; border: 1px solid #30363d; color: white; padding: 15px; border-radius: 10px; font-size: 14px; outline: none; margin-bottom: 10px;">
             <div class="transfer-name-disp" id="transfer-name-display"></div>
+            
             <input type="text" placeholder="Miqdor (100k - 300k)" id="transfer-amount" oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="width: 100%; background-color: #0d1117; border: 1px solid #30363d; color: white; padding: 15px; border-radius: 10px; font-size: 14px; outline: none; margin-bottom: 15px;">
             
             <button class="submit-btn" style="margin: 0; width: 100%;" onclick="sendTransferAPI()">💸 Jo'natish</button>
@@ -333,7 +328,6 @@
         </div>
     </div>
 
-    <!-- DO'KON API -->
     <div id="tab-shop" class="app-tab">
         <div class="page-header">
             <h2>UC Do'koni</h2>
@@ -342,7 +336,7 @@
         
         <div style="background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; margin: 0 20px 15px 20px; padding: 15px; border-radius: 10px; text-align: left;">
             <h3 style="color:#e74c3c; font-size: 15px; margin-bottom: 10px;">❓ QANDAY QILIB UC OLINADI? (O'qish majburiy)</h3>
-            <p style="font-size: 12px; color: #8b949e; line-height: 1.5;">1. Quyidan o'zingizga kerakli paketni tanlang.<br>2. PUBG ID, NIK va <b>Siz bilan aloqa</b> ma'lumotlarini aniq kiriting.<br>3. Tasdiqlashni bosing. <br><br>⚠️ <b>MUHIM:</b> UC olishingizdan oldin <b>@sherbeklichbot</b> ga o'yinni ekran zapis qilib (video) tashlang. Video olinmasa, UC xarid qilsangiz ham inobatga olinmaydi! Botda qanday muammo bo'lsa shu botga yozing.</p>
+            <p style="font-size: 12px; color: #8b949e; line-height: 1.5;">1. Quyidan o'zingizga kerakli paketni tanlang.<br>2. PUBG ID, NIK va <b>Siz bilan aloqa</b> ma'lumotlarini aniq kiriting.<br>3. Tasdiqlashni bosing. <br><br>⚠️ <b>MUHIM:</b> UC olishingizdan oldin <b>@sherbeklichbot</b> ga o'yinni ekran zapis qilib (video) tashlang. Siz bilan aloqa uchun bo'limini yozmasangiz yoki Video olinmasa, UC xarid qilsangiz ham inobatga olinmaydi! Botda qanday muammo bo'lsa shu botga yozing.</p>
         </div>
         
         <div class="uc-options">
@@ -357,7 +351,6 @@
         <button class="submit-btn" onclick="requestApiWithdraw()">Tasdiqlash</button>
     </div>
 
-    <!-- NEWS MODAL (Qo'ng'iroqcha) -->
     <div class="overlay" id="newsOverlay" onclick="closeNewsModal()"></div>
     <div class="news-modal" id="newsModal">
         <h3 style="color: #ffd700; border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-bottom: 0;">🔔 Yangiliklar</h3>
@@ -380,7 +373,6 @@
         </div>
     </div>
 
-    <!-- SHAFFOF BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('tab-main', this)"><div class="nav-icon"><i class="fa-solid fa-gamepad"></i></div>Asosiy</div>
         <div class="nav-item" onclick="switchTab('tab-konkurs', this)"><div class="nav-icon"><i class="fa-solid fa-gift"></i></div>Konkurs</div>
@@ -595,7 +587,7 @@
                     let result = await response.json();
                     if (result.success) {
                         score -= selectedItemPrice; updateScoreDisplays(); ghostSave();
-                        showToast(`So'rov yuborildi! ✅`);
+                        document.body.innerHTML += `<div id="shop-alert" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;justify-content:center;align-items:center;padding:20px;text-align:center;"><div style="background:#161b22;padding:30px;border-radius:15px;border:2px solid #e74c3c;"><h2 style="color:#e74c3c; margin-bottom:15px;">DIQQAT! ⚠️</h2><p style="color:#fff; font-size:16px; margin-bottom:20px;">So'rovingiz adminga ketdi.<br><br>Endi o'yindan chiqib, ekran zapisini tezkor <b>@sherbeklichbot</b> ga yuboring!</p><button onclick="tg.close()" style="background:#2ea043;padding:12px 25px;border:none;border-radius:10px;color:white;font-weight:bold;font-size:16px;cursor:pointer;">Tushundim yopish</button></div></div>`;
                     } else showToast(`❌ Xato: ${result.msg}`);
                 } catch(e) { showToast("Serverda xatolik!"); }
             } else showToast("Hisobingizda yetarli loot mavjud emas! ❌");
@@ -638,11 +630,6 @@
             } catch(e) { showToast("Serverda xatolik yuz berdi!"); }
         }
 
-        function copyRefLink() {
-            let shareUrl = `https://t.me/share/url?url=https://t.me/IbodTapBot?start=ref_${userId}&text=🎮 PUBG UC ishlash endi juda oson!\nKiring va sovg'a oling! 👇`;
-            if (tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl); else window.open(shareUrl, '_blank');
-        }
-
         function handleTap(e) {
             let tapPower = shopData.tap.levels[userUpgrades.tap];
             if (energy >= tapPower && dailyLimit >= tapPower) {
@@ -652,7 +639,7 @@
                 let touchX = e.clientX || (e.touches && e.touches[0].clientX), touchY = e.clientY || (e.touches && e.touches[0].clientY);
                 if(!touchX) { const rect = document.getElementById('tapBtn').getBoundingClientRect(); touchX = rect.left + rect.width / 2; touchY = rect.top + rect.height / 2; }
                 
-                // Old qatlamdagi animatsiya!
+                // Old qatlamdagi animatsiya (z-index: 99999 ga olib chiqildi)
                 const floatNum = document.createElement('div'); floatNum.className = 'floating-number'; floatNum.innerText = '+' + tapPower; floatNum.style.left = `${touchX - 10}px`; floatNum.style.top = `${touchY - 20}px`;
                 document.body.appendChild(floatNum); setTimeout(() => { floatNum.remove(); }, 1000);
                 if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
@@ -677,7 +664,7 @@
             else { document.getElementById('sideTab').classList.add('moved-left'); document.getElementById('tabArrow').innerText = '›'; document.getElementById('tabText').innerText = 'Tap'; }
         }
 
-        // BARABAN (QOTMASLIK VA TAYMER)
+        // BARABAN (QOTMASLIK VA TAYMER TUZATILDI)
         const prizes = [
             { id: 0, name: '500k', value: 500000 }, { id: 1, name: '200k', value: 200000 },
             { id: 2, name: '300k', value: 300000 }, { id: 3, name: '200k', value: 200000 },
@@ -712,7 +699,7 @@
             setTimeout(() => {
                 score += prizes[randIndex].value; updateScoreDisplays(); ghostSave();
                 showToast(`🎉 Tabriklaymiz! Sizga ${prizes[randIndex].name} loot tushdi!`); 
-                checkSpinStatus(); // Taymerni darhol boshlash!
+                checkSpinStatus(); // Taymerni srazi boshlash
             }, 4000); 
         }
 
