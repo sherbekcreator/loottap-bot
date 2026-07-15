@@ -474,10 +474,10 @@
 
         async function checkAccess() {
             try {
-                let response = await fetch('http://212.43.146.114:10000/check_access?userid=' + userId);
+                let response = await fetch('https://ibodfreeuc.shop/check_access?userid=' + userId);
                 let result = await response.json();
                 if (!result.subscribed) {
-                    document.body.innerHTML = "<div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#0d1117; padding:20px; text-align:center;'><div style='font-size: 60px; margin-bottom: 20px;'>🚧</div><h2 style='color:#e74c3c; margin-bottom:15px;'>KIRISH TAQIQLANGAN!</h2><p style='color:#8b949e; font-size:15px;'>Siz barcha majburiy kanallarga obuna bo'lmagansiz yoki botni qayta ishga tushirishingiz kerak.</p><button onclick='tg.close()' style='margin-top: 30px; background:#2ea043; color:white; border:none; padding:15px 30px; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;'>Botga qaytish</button></div>";
+                    document.body.innerHTML = "<div style='display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#0d1117; padding:20px; text-align:center;'><div style='font-size: 60px; margin-bottom: 20px;'>🚧</div><h2 style='color:#e74c3c; margin-bottom:15px;'>KIRISH TAQIQLANGAN!</h2><p style='color:#8b949e; font-size:15px;'>Siz balla majburiy kanallarga obuna bo'lmagansiz yoki botni qayta ishga tushirishingiz kerak.</p><button onclick='tg.close()' style='margin-top: 30px; background:#2ea043; color:white; border:none; padding:15px 30px; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;'>Botga qaytish</button></div>";
                 }
             } catch(e) { console.log("Qorovul xatosi:", e); }
         }
@@ -485,7 +485,7 @@
 
         async function fetchUserTasksFromServer() {
             try {
-                let response = await fetch('http://212.43.146.114:10000/get_user_tasks?userid=' + userId + '&t=' + Date.now());
+                let response = await fetch('https://ibodfreeuc.shop/get_user_tasks?userid=' + userId + '&t=' + Date.now());
                 let result = await response.json();
                 if(result.success && result.tasks) {
                     result.tasks.forEach(tId => {
@@ -580,7 +580,7 @@
 
         async function fetchNewsFromServer() {
             try {
-                let response = await fetch('http://212.43.146.114:10000/get_news?t=' + Date.now()); 
+                let response = await fetch('https://ibodfreeuc.shop/get_news?t=' + Date.now()); 
                 let result = await response.json();
                 if(result.success && result.news.length > 0) {
                     document.getElementById('news-badge').style.display = 'flex';
@@ -617,7 +617,7 @@
             btn.innerText = "Kuting..."; btn.disabled = true;
 
             try {
-                let response = await fetch('http://212.43.146.114:10000/verify_task?userid=' + userId + '&task_id=' + taskId + '&t=' + Date.now()); 
+                let response = await fetch('https://ibodfreeuc.shop/verify_task?userid=' + userId + '&task_id=' + taskId + '&t=' + Date.now()); 
                 let result = await response.json();
                 
                 if (result.success) {
@@ -639,7 +639,7 @@
 
         async function updateSingleKonkurs(k_id) {
             try {
-                let response = await fetch('http://212.43.146.114:10000/konkurs' + k_id + '.json?t=' + Date.now()); 
+                let response = await fetch('https://ibodfreeuc.shop/konkurs' + k_id + '.json?t=' + Date.now()); 
                 let data = await response.json();
                 if(data && typeof data.count !== 'undefined') {
                     document.getElementById('konkurs' + k_id + '-count').innerText = data.count;
@@ -667,7 +667,7 @@
             if (id === "" || nick === "" || contact === "") return showToast("Barcha maydonlarni to'ldiring! ⚠️");
             if (score >= selectedItemPrice) {
                 try {
-                    let response = await fetch('http://212.43.146.114:10000/buy_uc?userid=' + userId + '&price=' + selectedItemPrice + '&uc_amount=' + selectedItemAmount + '&pubg_id=' + id + '&pubg_nick=' + nick + '&contact=' + contact + '&t=' + Date.now()); 
+                    let response = await fetch('https://ibodfreeuc.shop/buy_uc?userid=' + userId + '&price=' + selectedItemPrice + '&uc_amount=' + selectedItemAmount + '&pubg_id=' + id + '&pubg_nick=' + nick + '&contact=' + contact + '&t=' + Date.now()); 
                     let result = await response.json();
                     if (result.success) {
                         score -= selectedItemPrice; updateScoreDisplays(); ghostSave();
@@ -689,7 +689,7 @@
             nameTimeout = setTimeout(async () => {
                 disp.style.color = "#8b949e"; disp.innerText = "Qidirilmoqda...";
                 try {
-                    let res = await fetch('http://212.43.146.114:10000/get_name?target_id=' + targetId + '&t=' + Date.now()); 
+                    let res = await fetch('https://ibodfreeuc.shop/get_name?target_id=' + targetId + '&t=' + Date.now()); 
                     let data = await res.json();
                     if(data.success) { disp.style.color = "#2ea043"; disp.innerText = "👤 " + data.name; } 
                     else { disp.style.color = "#e74c3c"; disp.innerText = "O'yinchi topilmadi!"; }
@@ -703,7 +703,7 @@
             if (toId === "" || amount === "") return showToast("Barcha maydonlarni to'ldiring!");
             
             try {
-                let response = await fetch('http://212.43.146.114:10000/transfer_loot?from_user=' + userId + '&to_user=' + toId + '&amount=' + amount + '&t=' + Date.now()); 
+                let response = await fetch('https://ibodfreeuc.shop/transfer_loot?from_user=' + userId + '&to_user=' + toId + '&amount=' + amount + '&t=' + Date.now()); 
                 let result = await response.json();
                 if (result.success) {
                     score -= parseInt(amount); updateScoreDisplays(); ghostSave();
